@@ -131,7 +131,7 @@ export function renderGameShell(container) {
   subtitle.textContent = "Creative directors: Lola + Alder";
 
   const stats = document.createElement("p");
-  stats.className = "stats";
+  stats.className = "stats score-box";
 
   const meterTrack = document.createElement("div");
   meterTrack.className = "meter-track";
@@ -141,9 +141,6 @@ export function renderGameShell(container) {
   const meterFill = document.createElement("div");
   meterFill.className = "meter-fill";
   meterTrack.append(meterFill);
-
-  const critters = document.createElement("p");
-  critters.className = "critters";
 
   const spriteStage = document.createElement("div");
   spriteStage.className = "sprite-stage";
@@ -687,10 +684,10 @@ export function renderGameShell(container) {
     shell.dataset.energy = String(getEnergyLevel(state.rainbowMeter));
     const levelName = RAINBOW_LEVELS[state.rainbowStageIndex];
     shell.dataset.level = levelName.toLowerCase();
-    stats.textContent = `Level ${levelName} | Meter ${state.rainbowMeter}% | Dance Points ${state.score}`;
+    stats.textContent = String(state.score);
+    stats.setAttribute("aria-label", `Score ${state.score}`);
     meterFill.style.width = `${state.rainbowMeter}%`;
     meterTrack.setAttribute("aria-valuenow", String(state.rainbowMeter));
-    critters.textContent = "Cat butt wiggle + dog butt wiggle";
     SHOP_ITEMS.forEach((item) => {
       spriteStage.classList.toggle(`has-${item.id}`, state.ownedItems.includes(item.id));
     });
@@ -755,7 +752,7 @@ export function renderGameShell(container) {
       const msUntilBeat = nextBeatAt - now;
       const progress = beatDurationMs <= 0 ? 1 : clamp01(1 - msUntilBeat / beatDurationMs);
       const laneSpan = LANE_TARGET_PCT - LANE_START_PCT;
-      feedback.textContent = `${getCountdownText(msUntilBeat)} Keep the rhythm!`;
+      feedback.textContent = getCountdownText(msUntilBeat);
       beatLane.classList.toggle("is-hot", msUntilBeat < 220 && msUntilBeat > -140);
       beatCue.classList.add("is-live");
       beatCue.classList.toggle("is-window", msUntilBeat < 220 && msUntilBeat > -140);
@@ -935,7 +932,7 @@ export function renderGameShell(container) {
 
   controls.append(pauseButton, playAgainButton);
   playPanel.append(musicButton);
-  playPanel.append(critters, spriteStage, beatCue, feedback, hype, controls);
+  playPanel.append(spriteStage, beatCue, feedback, hype, controls);
   sidePanel.append(shop);
   shellBody.append(playPanel, sidePanel);
   shell.append(title, subtitle, stats, shellBody);

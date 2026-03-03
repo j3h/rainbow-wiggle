@@ -134,3 +134,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Players need a way to temporarily stop active rhythm rounds.
 - Decision: Add a `Pause` / `Resume` control that freezes active lane input, then resumes on-beat alignment when unpaused.
 - Consequences: Better play-session control without adding new core mechanics.
+
+## D-020 - Minimal Top HUD
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Level and meter are already visible in lane color and meter strip, so extra labels add clutter.
+- Decision: Replace top status text with a compact numeric score box (no "Points" label).
+- Consequences: Cleaner screen focus and faster readability during play.
