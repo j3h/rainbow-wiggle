@@ -268,10 +268,12 @@ body {
 
 .sprite-stage {
   margin-top: 0.8rem;
+  padding-top: 42px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
   position: relative;
+  overflow: visible;
 }
 
 .burst-layer {
@@ -291,7 +293,7 @@ body {
   background-size: calc(var(--sprite-zoom, 2.2) * 100%) auto;
   background-position: var(--sprite-bx, var(--sprite-x, 50%)) var(--sprite-by, var(--sprite-y, 50%));
   image-rendering: auto;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .sprite-cat {
