@@ -16,6 +16,7 @@ const TAP_BEAT_PATTERN = [2, 3, 1, 2, 2, 1, 3, 2];
 const NOTE_PREVIEW_COUNT = 4;
 const LANE_START_PCT = 8;
 const LANE_TARGET_PCT = 90;
+const MIN_NOTE_GAP_PCT = 10;
 const WIGGLE_MS = 850;
 const SPRITE_SHEET_SRC = "/src/assets/sprites/cat-dog-butt-wiggle-base.png";
 const FALLBACK_SHEET_ASPECT = 1536 / 1024;
@@ -738,6 +739,7 @@ export function renderGameShell(container) {
       beatCursor.style.left = `${(LANE_START_PCT + progress * laneSpan).toFixed(2)}%`;
       beatCue.style.setProperty("--beat-progress", String(progress));
 
+      let previousNotePos = LANE_TARGET_PCT + MIN_NOTE_GAP_PCT;
       noteEls.forEach((note, index) => {
         let noteAt = nextBeatAt;
         for (let step = 0; step < index; step += 1) {
@@ -750,10 +752,12 @@ export function renderGameShell(container) {
           lookAhead += getBeatDurationMs() * getPatternValue(beatPatternIndex + step);
         }
         const normalized = clamp01(1 - delta / lookAhead);
-        const lanePosition = LANE_START_PCT + normalized * laneSpan;
+        const rawLanePosition = LANE_START_PCT + normalized * laneSpan;
+        const lanePosition = Math.min(rawLanePosition, previousNotePos - MIN_NOTE_GAP_PCT);
         note.style.left = `${lanePosition.toFixed(2)}%`;
         note.style.opacity = delta < -220 ? "0" : "1";
         note.classList.toggle("is-next", index === 0);
+        previousNotePos = lanePosition;
       });
       pipEls[0].classList.add("is-current");
       hype.textContent = "Watch incoming notes and tap in the zone!";
