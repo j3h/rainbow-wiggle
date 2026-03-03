@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node scripts/serve.mjs",
-    "test": "node --test"
+    "test": "node --test",
+    "share-url": "./scripts/share-url.sh"
   },
   "engines": {
     "node": ">=20"
