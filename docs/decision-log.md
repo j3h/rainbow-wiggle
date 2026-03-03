@@ -148,3 +148,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Pause/music controls should require minimal finger travel and stay visually lightweight.
 - Decision: Group score, play/pause toggle, and music toggle into a small floating HUD next to the rhythm lane; play/pause now acts as start/pause/resume from one control.
 - Consequences: Faster control access on touch devices and less layout noise in the main action area.
+
+## D-022 - Shop Tap Reliability Over Visual FX
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Decorative visual layers may overlap the shop region and intermittently steal taps.
+- Decision: Make all sprite-stage visuals non-interactive and raise the side-panel/shop stacking context.
+- Consequences: Shop buttons remain consistently tappable while keeping effects visible.
