@@ -842,6 +842,11 @@ body {
   border-style: dashed;
 }
 
+.shop-item.is-enabled {
+  border-color: #6fc88a;
+  box-shadow: 0 0 0 2px rgba(111, 200, 138, 0.2);
+}
+
 .hype {
   margin: 0.4rem 0 0;
   font-size: clamp(1rem, 2.6vw, 1.3rem);

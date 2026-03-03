@@ -12,7 +12,8 @@ test("createInitialState returns safe defaults", () => {
     rainbowMeter: 0,
     hasWon: false,
     lastZone: null,
-    ownedItems: []
+    ownedItems: [],
+    enabledItems: []
   });
 });
 
@@ -51,8 +52,10 @@ test("BUY_ITEM spends score and records ownership once", () => {
 
   assert.equal(after.score, 10);
   assert.deepEqual(after.ownedItems, ["neon-collar"]);
+   assert.deepEqual(after.enabledItems, ["neon-collar"]);
   assert.equal(duplicate.score, 10);
   assert.deepEqual(duplicate.ownedItems, ["neon-collar"]);
+  assert.deepEqual(duplicate.enabledItems, ["neon-collar"]);
 });
 
 test("sanitizeTitle trims and limits text", () => {
@@ -67,6 +70,7 @@ test("BUY_ITEM does nothing when score is insufficient", () => {
 
   assert.equal(after.score, 4);
   assert.deepEqual(after.ownedItems, []);
+  assert.deepEqual(after.enabledItems, []);
 });
 
 test("BUY_ITEM can unlock disco-ball when affordable", () => {
@@ -75,4 +79,15 @@ test("BUY_ITEM can unlock disco-ball when affordable", () => {
 
   assert.equal(after.score, 6);
   assert.deepEqual(after.ownedItems, ["disco-ball"]);
+  assert.deepEqual(after.enabledItems, ["disco-ball"]);
+});
+
+test("TOGGLE_ITEM turns owned effects off and on", () => {
+  const before = createInitialState({ ownedItems: ["party-lasers"], enabledItems: ["party-lasers"] });
+  const off = applyAction(before, { type: "TOGGLE_ITEM", itemId: "party-lasers" });
+  const on = applyAction(off, { type: "TOGGLE_ITEM", itemId: "party-lasers" });
+
+  assert.deepEqual(off.ownedItems, ["party-lasers"]);
+  assert.deepEqual(off.enabledItems, []);
+  assert.deepEqual(on.enabledItems, ["party-lasers"]);
 });

@@ -741,30 +741,32 @@ export function renderGameShell(container) {
     meterFill.style.width = `${state.rainbowMeter}%`;
     meterTrack.setAttribute("aria-valuenow", String(state.rainbowMeter));
     SHOP_ITEMS.forEach((item) => {
-      spriteStage.classList.toggle(`has-${item.id}`, state.ownedItems.includes(item.id));
+      spriteStage.classList.toggle(`has-${item.id}`, state.enabledItems.includes(item.id));
     });
-    partyLaserLayer.classList.toggle("is-visible", state.ownedItems.includes("party-lasers"));
-    discoBallChain.classList.toggle("is-visible", state.ownedItems.includes("disco-ball"));
-    discoBallDecor.classList.toggle("is-visible", state.ownedItems.includes("disco-ball"));
-    discoBallRays.classList.toggle("is-visible", state.ownedItems.includes("disco-ball"));
-    const showUnicorn = state.ownedItems.includes("unicorn-crown");
+    partyLaserLayer.classList.toggle("is-visible", state.enabledItems.includes("party-lasers"));
+    discoBallChain.classList.toggle("is-visible", state.enabledItems.includes("disco-ball"));
+    discoBallDecor.classList.toggle("is-visible", state.enabledItems.includes("disco-ball"));
+    discoBallRays.classList.toggle("is-visible", state.enabledItems.includes("disco-ball"));
+    const showUnicorn = state.enabledItems.includes("unicorn-crown");
     unicornLeft.classList.toggle("is-visible", showUnicorn);
     unicornRight.classList.toggle("is-visible", showUnicorn);
     shell.classList.toggle("is-win", state.hasWon);
 
     SHOP_ITEMS.forEach((item, index) => {
       const owned = state.ownedItems.includes(item.id);
+      const enabled = state.enabledItems.includes(item.id);
       const affordable = state.score >= item.cost;
       const revealed = owned || maxScoreSeen >= item.cost;
       const button = shopButtons[index];
       button.hidden = !revealed;
-      button.disabled = owned;
+      button.disabled = false;
       button.classList.toggle("is-unaffordable", !owned && !affordable);
+      button.classList.toggle("is-enabled", owned && enabled);
       if (!revealed) {
         return;
       }
       button.textContent = owned
-        ? `${item.name} - Owned`
+        ? `${item.name} - ${enabled ? "On" : "Off"}`
         : `${item.name} (${item.cost}) - ${item.effect}`;
     });
 
@@ -944,7 +946,8 @@ export function renderGameShell(container) {
   playAgainButton.addEventListener("click", () => {
     state = createInitialState({
       title: state.title,
-      ownedItems: state.ownedItems
+      ownedItems: state.ownedItems,
+      enabledItems: state.enabledItems
     });
     nextBeatAt = null;
     beatPatternIndex = 0;
@@ -964,6 +967,12 @@ export function renderGameShell(container) {
   shopButtons.forEach((button, index) => {
     const item = SHOP_ITEMS[index];
     button.addEventListener("click", () => {
+      if (state.ownedItems.includes(item.id)) {
+        state = applyAction(state, { type: "TOGGLE_ITEM", itemId: item.id });
+        lastShopMessage = `Shop: ${item.name} ${state.enabledItems.includes(item.id) ? "ON" : "OFF"}.`;
+        render();
+        return;
+      }
       const beforeScore = state.score;
       const beforeOwned = state.ownedItems.length;
       state = applyAction(state, { type: "BUY_ITEM", itemId: item.id, cost: item.cost });

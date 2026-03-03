@@ -53,6 +53,13 @@ export function sanitizeTitle(value) {
 }
 
 export function createInitialState(overrides = {}) {
+  const ownedItems = Array.isArray(overrides.ownedItems)
+    ? overrides.ownedItems.filter((item) => typeof item === "string")
+    : [];
+  const enabledItems = Array.isArray(overrides.enabledItems)
+    ? overrides.enabledItems.filter((item) => typeof item === "string" && ownedItems.includes(item))
+    : [...ownedItems];
+
   const rainbowStageIndex = Number.isInteger(overrides.rainbowStageIndex)
     ? clamp(overrides.rainbowStageIndex, 0, LAST_LEVEL_INDEX)
     : 0;
@@ -67,9 +74,8 @@ export function createInitialState(overrides = {}) {
     rainbowMeter,
     hasWon,
     lastZone: ["miss", "good", "perfect"].includes(overrides.lastZone) ? overrides.lastZone : null,
-    ownedItems: Array.isArray(overrides.ownedItems)
-      ? overrides.ownedItems.filter((item) => typeof item === "string")
-      : []
+    ownedItems,
+    enabledItems
   };
 }
 
@@ -167,7 +173,26 @@ export function applyAction(state, action) {
       return {
         ...state,
         score: state.score - cost,
-        ownedItems: [...state.ownedItems, itemId]
+        ownedItems: [...state.ownedItems, itemId],
+        enabledItems: [...state.enabledItems, itemId]
+      };
+    }
+    case "TOGGLE_ITEM": {
+      const itemId = typeof action.itemId === "string" ? action.itemId : "";
+      if (!itemId || !state.ownedItems.includes(itemId)) {
+        return state;
+      }
+
+      if (state.enabledItems.includes(itemId)) {
+        return {
+          ...state,
+          enabledItems: state.enabledItems.filter((id) => id !== itemId)
+        };
+      }
+
+      return {
+        ...state,
+        enabledItems: [...state.enabledItems, itemId]
       };
     }
     case "SET_TITLE":

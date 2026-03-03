@@ -162,3 +162,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Shop copy should feel cleaner than showing repeated "need points" text.
 - Decision: Hide locked items until the player has reached each item's cost threshold at least once in the current run.
 - Consequences: Cleaner shop list and clearer sense of unlocking as score increases.
+
+## D-024 - Shop Effect Toggle For Owned Items
+- Date: 2026-03-03
+- Status: Accepted
+- Context: Players requested control to turn purchased visual effects on/off.
+- Decision: Keep purchased items owned permanently, but allow toggling each owned effect active/inactive from its shop button.
+- Consequences: More player control over visual intensity without removing progression.
