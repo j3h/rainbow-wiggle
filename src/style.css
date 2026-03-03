@@ -250,6 +250,11 @@ body {
   box-shadow: 0 0 0 3px rgba(239, 111, 62, 0.25), 0 0 16px rgba(239, 111, 62, 0.38);
 }
 
+.beat-lane.is-paused {
+  filter: saturate(0.72) brightness(0.9);
+  box-shadow: inset 0 0 0 2px rgba(35, 45, 65, 0.18);
+}
+
 .beat-target {
   position: absolute;
   right: 10%;
@@ -841,6 +846,10 @@ body {
 
 .action-secondary {
   background: linear-gradient(135deg, #2d8f9e, #46b4c3);
+}
+
+.action-pause {
+  background: linear-gradient(135deg, #6784a0, #7a97b2);
 }
 
 .action-replay {

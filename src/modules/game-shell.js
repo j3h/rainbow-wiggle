@@ -112,6 +112,9 @@ export function renderGameShell(container) {
   let hypeText = "Ready to wiggle";
   let lastShopMessage = "";
   let countdownRaf = null;
+  let isPaused = false;
+  let pauseHasActiveRound = false;
+  let resumeMusicAfterPause = false;
   let spriteSheetAspect = FALLBACK_SHEET_ASPECT;
   const params = new URLSearchParams(window.location.search);
   const debugSprites = params.get("debugSprites") === "1";
@@ -249,6 +252,11 @@ export function renderGameShell(container) {
   playAgainButton.className = "action action-replay";
   playAgainButton.type = "button";
   playAgainButton.textContent = "Play Again";
+
+  const pauseButton = document.createElement("button");
+  pauseButton.className = "action action-secondary action-pause";
+  pauseButton.type = "button";
+  pauseButton.textContent = "Pause";
 
   beatLane.setAttribute("role", "button");
   beatLane.setAttribute("tabindex", "0");
@@ -678,7 +686,7 @@ export function renderGameShell(container) {
     const now = performance.now();
     const currentBeatsAhead = getPatternValue(beatPatternIndex);
     const beatIntervalMs = getBeatDurationMs() * currentBeatsAhead;
-    if (nextBeatAt !== null && beatIntervalMs > 0) {
+    if (!isPaused && nextBeatAt !== null && beatIntervalMs > 0) {
       while (nextBeatAt < now - 200) {
         nextBeatAt += beatIntervalMs;
       }
@@ -717,6 +725,7 @@ export function renderGameShell(container) {
 
     if (nextBeatAt === null) {
       beatLane.classList.remove("is-hot");
+      beatLane.classList.toggle("is-paused", isPaused);
       beatCue.classList.remove("is-live");
       beatBadge.textContent = "RHYTHM LANE";
       beatCue.style.setProperty("--beat-progress", "0");
@@ -732,11 +741,31 @@ export function renderGameShell(container) {
         feedback.textContent = lastShopMessage;
       } else if (state.hasWon) {
         feedback.textContent = "YOU WON THE RED LEVEL! Rainbow champions forever.";
+      } else if (isPaused) {
+        feedback.textContent = "Paused. Tap Resume to keep dancing.";
       } else {
         feedback.textContent = buildFeedback(state.lastZone);
       }
       hype.textContent = hypeText;
     } else {
+      beatLane.classList.toggle("is-paused", isPaused);
+      if (isPaused) {
+        beatLane.classList.remove("is-hot");
+        beatCue.classList.remove("is-window");
+        beatCue.classList.remove("is-live");
+        beatBadge.textContent = "PAUSED";
+        feedback.textContent = "Paused. Tap Resume to keep dancing.";
+        hype.textContent = "Dance floor on hold";
+        noteEls.forEach((note) => {
+          note.style.opacity = "0";
+        });
+        playAgainButton.classList.toggle("is-visible", state.hasWon);
+        playAgainButton.disabled = !state.hasWon;
+        pauseButton.textContent = "Resume";
+        pauseButton.disabled = false;
+        return;
+      }
+
       const msUntilBeat = nextBeatAt - now;
       const progress = beatDurationMs <= 0 ? 1 : clamp01(1 - msUntilBeat / beatDurationMs);
       const laneSpan = LANE_TARGET_PCT - LANE_START_PCT;
@@ -774,9 +803,15 @@ export function renderGameShell(container) {
 
     playAgainButton.classList.toggle("is-visible", state.hasWon);
     playAgainButton.disabled = !state.hasWon;
+    pauseButton.textContent = isPaused ? "Resume" : "Pause";
+    pauseButton.disabled = nextBeatAt === null && !isPaused;
   };
 
   const handleLaneTap = () => {
+    if (isPaused) {
+      return;
+    }
+
     if (!musicStarted) {
       startDiscoLoop();
       musicStarted = true;
@@ -830,6 +865,41 @@ export function renderGameShell(container) {
     render();
   };
 
+  const handlePauseToggle = () => {
+    if (!isPaused) {
+      if (nextBeatAt === null) {
+        return;
+      }
+      pauseHasActiveRound = true;
+      isPaused = true;
+      resumeMusicAfterPause = isDiscoLoopActive();
+      if (resumeMusicAfterPause) {
+        toggleDiscoLoop();
+      }
+      stopCountdownRender();
+      updateMusicLabel();
+      render();
+      return;
+    }
+
+    isPaused = false;
+    if (resumeMusicAfterPause) {
+      startDiscoLoop();
+      musicStarted = true;
+      resumeMusicAfterPause = false;
+    }
+    if (pauseHasActiveRound && !state.hasWon) {
+      const beatsAhead = getPatternValue(beatPatternIndex);
+      beatDurationMs = Math.max(500, getBeatDurationMs() * beatsAhead);
+      const aligned = getNextAlignedBeatPerfTime(beatsAhead);
+      nextBeatAt = aligned || performance.now() + beatDurationMs;
+      pauseHasActiveRound = false;
+      startCountdownRender();
+    }
+    updateMusicLabel();
+    render();
+  };
+
   beatLane.addEventListener("click", handleLaneTap);
   beatLane.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {
@@ -854,9 +924,14 @@ export function renderGameShell(container) {
     comboStreak = 0;
     hypeText = "Ready to wiggle";
     lastShopMessage = "";
+    isPaused = false;
+    pauseHasActiveRound = false;
+    resumeMusicAfterPause = false;
     stopCountdownRender();
     render();
   });
+
+  pauseButton.addEventListener("click", handlePauseToggle);
 
   shopButtons.forEach((button, index) => {
     const item = SHOP_ITEMS[index];
@@ -875,7 +950,7 @@ export function renderGameShell(container) {
     });
   });
 
-  controls.append(playAgainButton);
+  controls.append(pauseButton, playAgainButton);
   playPanel.append(musicButton);
   playPanel.append(critters, spriteStage, beatCue, feedback, hype, controls);
   sidePanel.append(shop);

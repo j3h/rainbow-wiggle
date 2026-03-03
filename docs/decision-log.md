@@ -127,3 +127,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Music control should be available but not compete with gameplay focus.
 - Decision: Replace the full-width music button with a small side icon toggle.
 - Consequences: Lower visual clutter while preserving quick access to audio control.
+
+## D-019 - Pause/Resume Control
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Players need a way to temporarily stop active rhythm rounds.
+- Decision: Add a `Pause` / `Resume` control that freezes active lane input, then resumes on-beat alignment when unpaused.
+- Consequences: Better play-session control without adding new core mechanics.
