@@ -197,14 +197,6 @@ export function renderGameShell(container) {
 
   const beatCue = document.createElement("div");
   beatCue.className = "beat-cue";
-  const beatPips = document.createElement("div");
-  beatPips.className = "beat-pips";
-  const pipEls = Array.from({ length: 1 }, () => {
-    const pip = document.createElement("span");
-    pip.className = "beat-pip";
-    return pip;
-  });
-  beatPips.append(...pipEls);
   const beatLane = document.createElement("div");
   beatLane.className = "beat-lane";
   meterTrack.classList.add("lane-meter-track");
@@ -221,7 +213,7 @@ export function renderGameShell(container) {
   const beatZone = document.createElement("div");
   beatZone.className = "beat-zone";
   beatLane.append(meterTrack, hitFxLayer, beatTarget, beatZone, ...noteEls);
-  beatCue.append(beatPips, beatLane);
+  beatCue.append(beatLane);
 
   const shop = document.createElement("section");
   shop.className = "shop";
@@ -727,8 +719,6 @@ export function renderGameShell(container) {
       beatCue.classList.remove("is-live");
       beatCue.style.setProperty("--beat-progress", "0");
       beatCue.classList.remove("is-window");
-      pipEls[0].classList.remove("is-done");
-      pipEls[0].classList.add("is-current");
       noteEls.forEach((note) => {
         note.style.opacity = "0";
       });
@@ -791,7 +781,6 @@ export function renderGameShell(container) {
         note.classList.toggle("is-next", index === 0);
         previousNotePos = lanePosition;
       });
-      pipEls[0].classList.add("is-current");
       hype.textContent = "Hit orange notes when they enter the target zone!";
     }
 

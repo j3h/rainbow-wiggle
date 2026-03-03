@@ -281,32 +281,6 @@ body {
   box-shadow: 0 0 12px rgba(255, 110, 76, 0.65);
 }
 
-.beat-pips {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 16px;
-  gap: 0.45rem;
-}
-
-.beat-pip {
-  width: 14px;
-  height: 14px;
-  border-radius: 999px;
-  border: 2px solid #c8bba3;
-  background: #f0e8d8;
-}
-
-.beat-pip.is-current {
-  border-color: #2d68ff;
-  background: #7bb7ff;
-  box-shadow: 0 0 0 3px rgba(45, 104, 255, 0.16);
-}
-
-.beat-pip.is-done {
-  border-color: #ef6f3e;
-  background: #ffb082;
-}
-
 .beat-cue.is-window .beat-zone {
   background: rgba(239, 111, 62, 0.24);
   border-color: #ef6f3e;
