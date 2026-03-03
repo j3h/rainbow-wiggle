@@ -1,78 +1,47 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  applyAction,
-  createInitialState,
-  getRainbowLevel,
-  sanitizeTitle
-} from "../src/modules/interaction-state.js";
+import { applyAction, createInitialState, RAINBOW_LEVELS, sanitizeTitle } from "../src/modules/interaction-state.js";
 
 test("createInitialState returns safe defaults", () => {
   assert.deepEqual(createInitialState(), {
     title: "Butt Wiggle: Rainbow Version",
     round: 1,
     score: 0,
+    rainbowStageIndex: 0,
     rainbowMeter: 0,
-    rainbowLevel: "Tiny Rainbow",
+    hasWon: false,
     lastZone: null,
     ownedItems: []
   });
 });
 
-test("APPLY_JUDGMENT does not mutate previous state", () => {
+test("APPLY_JUDGMENT increments score and meter immutably", () => {
   const before = createInitialState();
   const after = applyAction(before, { type: "APPLY_JUDGMENT", zone: "good" });
 
   assert.equal(before.score, 0);
   assert.equal(before.rainbowMeter, 0);
   assert.equal(after.score, 2);
-  assert.equal(after.rainbowMeter, 12);
-  assert.equal(after.rainbowLevel, "Tiny Rainbow");
+  assert.equal(after.rainbowMeter, 16);
   assert.equal(after.round, 2);
   assert.equal(after.lastZone, "good");
 });
 
-test("perfect increases meter and clamps at 100", () => {
-  const before = createInitialState({ rainbowMeter: 95, score: 0 });
-  const after = applyAction(before, { type: "APPLY_JUDGMENT", zone: "perfect" });
+test("rainbow progression advances through ordered levels and wins at Red", () => {
+  let state = createInitialState({ rainbowStageIndex: RAINBOW_LEVELS.length - 2, rainbowMeter: 90 });
+  state = applyAction(state, { type: "APPLY_JUDGMENT", zone: "perfect" });
 
-  assert.equal(after.rainbowMeter, 100);
-  assert.equal(after.score, 3);
-});
+  assert.equal(state.rainbowStageIndex, RAINBOW_LEVELS.length - 1);
+  assert.equal(state.rainbowMeter, 14);
+  assert.equal(state.hasWon, false);
 
-test("miss can reduce meter but never below zero", () => {
-  const before = createInitialState({ rainbowMeter: 2 });
-  const after = applyAction(before, { type: "APPLY_JUDGMENT", zone: "miss" });
+  state = createInitialState({ rainbowStageIndex: RAINBOW_LEVELS.length - 1, rainbowMeter: 96 });
+  state = applyAction(state, { type: "APPLY_JUDGMENT", zone: "perfect" });
 
-  assert.equal(after.rainbowMeter, 0);
-  assert.equal(after.score, 0);
-});
-
-test("sanitizeTitle trims and limits text", () => {
-  const title = sanitizeTitle("   This    is a very long title for game night edition   ");
-  assert.equal(title.startsWith("This is a very long title for game night"), true);
-  assert.ok(title.length <= 40);
-});
-
-test("APPLY_COMBO adds base and bonus points for full perfect combo", () => {
-  const before = createInitialState();
-  const after = applyAction(before, { type: "APPLY_COMBO", zones: ["perfect", "perfect", "perfect"] });
-
-  assert.equal(after.score, 17);
-  assert.equal(after.rainbowMeter, 76);
-  assert.equal(after.rainbowLevel, "Mega Rainbow");
-  assert.equal(after.lastZone, "perfect");
-  assert.equal(after.round, 2);
-});
-
-test("APPLY_COMBO clamps low meter for all-miss combo", () => {
-  const before = createInitialState({ rainbowMeter: 5 });
-  const after = applyAction(before, { type: "APPLY_COMBO", zones: ["miss", "miss", "miss"] });
-
-  assert.equal(after.rainbowMeter, 0);
-  assert.equal(after.score, 0);
-  assert.equal(after.lastZone, "miss");
+  assert.equal(state.rainbowStageIndex, RAINBOW_LEVELS.length - 1);
+  assert.equal(state.rainbowMeter, 100);
+  assert.equal(state.hasWon, true);
 });
 
 test("BUY_ITEM spends score and records ownership once", () => {
@@ -86,10 +55,8 @@ test("BUY_ITEM spends score and records ownership once", () => {
   assert.deepEqual(duplicate.ownedItems, ["neon-collar"]);
 });
 
-test("getRainbowLevel maps thresholds", () => {
-  assert.equal(getRainbowLevel(0), "Tiny Rainbow");
-  assert.equal(getRainbowLevel(25), "Shimmer Rainbow");
-  assert.equal(getRainbowLevel(50), "Vibrant Rainbow");
-  assert.equal(getRainbowLevel(75), "Mega Rainbow");
-  assert.equal(getRainbowLevel(100), "Cosmic Rainbow");
+test("sanitizeTitle trims and limits text", () => {
+  const title = sanitizeTitle("   This    is a very long title for game night edition   ");
+  assert.equal(title.startsWith("This is a very long title for game night"), true);
+  assert.ok(title.length <= 40);
 });

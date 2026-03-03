@@ -1,4 +1,4 @@
-import { applyAction, createInitialState } from "./interaction-state.js";
+import { applyAction, createInitialState, RAINBOW_LEVELS } from "./interaction-state.js";
 import { getLayoutMode } from "./layout.js";
 import { getEnergyLevel, getHypeText } from "./fun-mode.js";
 import {
@@ -12,8 +12,8 @@ import {
 import { judgeTiming } from "./timing.js";
 
 const PREP_MS = 1200;
-const COMBO_BEATS = 3;
-const BEAT_GAP_MS = 520;
+const TAP_BEAT_INTERVAL = 2;
+const NOTE_PREVIEW_COUNT = 4;
 const WIGGLE_MS = 850;
 const SPRITE_SHEET_SRC = "/src/assets/sprites/cat-dog-butt-wiggle-base.png";
 const FALLBACK_SHEET_ASPECT = 1536 / 1024;
@@ -46,6 +46,10 @@ function mapCenterPctToBackgroundPosition(centerPct, scale) {
   const t = centerPct / 100;
   const pos = ((0.5 - t * scale) / (1 - scale)) * 100;
   return pos;
+}
+
+function clamp01(value) {
+  return Math.min(1, Math.max(0, value));
 }
 
 function getFrameSample(spriteTune, frameIndex) {
@@ -91,12 +95,8 @@ export function renderGameShell(container) {
 
   let state = createInitialState();
   let nextBeatAt = null;
-  let beatStartAt = null;
-  let beatDurationMs = PREP_MS;
-  let comboBeatIndex = 0;
-  let comboZones = [];
+  let beatDurationMs = getBeatDurationMs() * TAP_BEAT_INTERVAL;
   let comboStreak = 0;
-  let lastComboFeedback = "";
   let hypeText = "Ready to wiggle";
   let lastShopMessage = "";
   let countdownRaf = null;
@@ -156,7 +156,7 @@ export function renderGameShell(container) {
   beatBadge.className = "beat-badge";
   const beatPips = document.createElement("div");
   beatPips.className = "beat-pips";
-  const pipEls = Array.from({ length: COMBO_BEATS }, () => {
+  const pipEls = Array.from({ length: 1 }, () => {
     const pip = document.createElement("span");
     pip.className = "beat-pip";
     return pip;
@@ -168,9 +168,14 @@ export function renderGameShell(container) {
   beatTarget.className = "beat-target";
   const beatCursor = document.createElement("div");
   beatCursor.className = "beat-cursor";
+  const noteEls = Array.from({ length: NOTE_PREVIEW_COUNT }, () => {
+    const note = document.createElement("span");
+    note.className = "beat-note";
+    return note;
+  });
   const beatZone = document.createElement("div");
   beatZone.className = "beat-zone";
-  beatLane.append(beatTarget, beatZone, beatCursor);
+  beatLane.append(beatTarget, beatZone, ...noteEls, beatCursor);
   beatCue.append(beatBadge, beatPips, beatLane);
 
   const shop = document.createElement("section");
@@ -582,9 +587,19 @@ export function renderGameShell(container) {
   };
 
   const render = () => {
+    const now = performance.now();
+    const beatIntervalMs = getBeatDurationMs() * TAP_BEAT_INTERVAL;
+    if (nextBeatAt !== null && beatIntervalMs > 0) {
+      while (nextBeatAt < now - 200) {
+        nextBeatAt += beatIntervalMs;
+      }
+      beatDurationMs = beatIntervalMs;
+    }
+
     title.textContent = state.title;
     shell.dataset.energy = String(getEnergyLevel(state.rainbowMeter));
-    stats.textContent = `Round ${state.round} | Dance Points ${state.score} | ${state.rainbowLevel}`;
+    const levelName = RAINBOW_LEVELS[state.rainbowStageIndex];
+    stats.textContent = `Level ${levelName} | Meter ${state.rainbowMeter}% | Dance Points ${state.score}`;
     meterFill.style.width = `${state.rainbowMeter}%`;
     meterTrack.setAttribute("aria-valuenow", String(state.rainbowMeter));
     critters.textContent = "Cat butt wiggle + dog butt wiggle";
@@ -602,32 +617,33 @@ export function renderGameShell(container) {
     });
 
     if (nextBeatAt === null) {
-      danceButton.textContent = "Start 3-Beat Dance Combo";
+      danceButton.textContent = "Start Rhythm Lane";
       danceButton.classList.remove("is-hot");
       beatCue.classList.remove("is-live");
       beatBadge.textContent = "READY";
       beatCursor.style.left = "0%";
       beatCue.style.setProperty("--beat-progress", "0");
       beatCue.classList.remove("is-window");
-      pipEls.forEach((pip) => {
-        pip.classList.remove("is-done", "is-current");
+      pipEls[0].classList.remove("is-done");
+      pipEls[0].classList.add("is-current");
+      noteEls.forEach((note) => {
+        note.style.opacity = "0";
       });
       if (!state.lastZone) {
-        feedback.textContent = "Tap to start. Hit 3 beats in a row for combo bonuses.";
+        feedback.textContent = "Tap to start. Hit when notes line up in the target zone.";
       } else if (lastShopMessage) {
         feedback.textContent = lastShopMessage;
-      } else if (lastComboFeedback) {
-        feedback.textContent = lastComboFeedback;
+      } else if (state.hasWon) {
+        feedback.textContent = "YOU WON THE RED LEVEL! Rainbow champions forever.";
       } else {
         feedback.textContent = buildFeedback(state.lastZone);
       }
       hype.textContent = hypeText;
     } else {
-      danceButton.textContent = `HIT BEAT ${comboBeatIndex + 1}/${COMBO_BEATS}`;
-      const msUntilBeat = nextBeatAt - performance.now();
-      const elapsed = Math.max(0, Math.min(beatDurationMs, performance.now() - beatStartAt));
-      const progress = beatDurationMs <= 0 ? 1 : elapsed / beatDurationMs;
-      feedback.textContent = `${getCountdownText(msUntilBeat)} Beat ${comboBeatIndex + 1}/${COMBO_BEATS}`;
+      danceButton.textContent = "TAP ON BEAT";
+      const msUntilBeat = nextBeatAt - now;
+      const progress = beatDurationMs <= 0 ? 1 : clamp01(1 - msUntilBeat / beatDurationMs);
+      feedback.textContent = `${getCountdownText(msUntilBeat)} Keep the rhythm!`;
       danceButton.classList.toggle("is-hot", msUntilBeat < 220);
       beatCue.classList.add("is-live");
       beatBadge.textContent = getVisualCueText(msUntilBeat, beatDurationMs);
@@ -635,11 +651,18 @@ export function renderGameShell(container) {
       beatCue.classList.toggle("is-window", msUntilBeat < 220 && msUntilBeat > -140);
       beatCursor.style.left = `${Math.round(progress * 100)}%`;
       beatCue.style.setProperty("--beat-progress", String(progress));
-      pipEls.forEach((pip, index) => {
-        pip.classList.toggle("is-done", index < comboBeatIndex);
-        pip.classList.toggle("is-current", index === comboBeatIndex);
+
+      noteEls.forEach((note, index) => {
+        const noteAt = nextBeatAt + index * beatIntervalMs;
+        const delta = noteAt - now;
+        const lookAhead = beatIntervalMs * NOTE_PREVIEW_COUNT;
+        const position = clamp01(1 - delta / lookAhead);
+        note.style.left = `${Math.round(position * 100)}%`;
+        note.style.opacity = delta < -220 ? "0" : "1";
+        note.classList.toggle("is-next", index === 0);
       });
-      hype.textContent = `Beat ${comboBeatIndex + 1}: Align cursor to target!`;
+      pipEls[0].classList.add("is-current");
+      hype.textContent = "Watch incoming notes and tap in the zone!";
     }
   };
 
@@ -651,16 +674,13 @@ export function renderGameShell(container) {
     }
 
     if (nextBeatAt === null) {
-      comboBeatIndex = 0;
-      comboZones = [];
-      const firstBeat = getNextAlignedBeatPerfTime(2);
-      beatStartAt = performance.now();
+      const firstBeat = getNextAlignedBeatPerfTime(TAP_BEAT_INTERVAL);
       if (firstBeat) {
         nextBeatAt = firstBeat;
-        beatDurationMs = Math.max(280, nextBeatAt - beatStartAt);
+        beatDurationMs = Math.max(420, getBeatDurationMs() * TAP_BEAT_INTERVAL);
       } else {
-        beatDurationMs = PREP_MS;
-        nextBeatAt = beatStartAt + beatDurationMs;
+        beatDurationMs = Math.max(PREP_MS, getBeatDurationMs() * TAP_BEAT_INTERVAL);
+        nextBeatAt = performance.now() + beatDurationMs;
       }
       startCountdownRender();
       render();
@@ -669,37 +689,25 @@ export function renderGameShell(container) {
 
     const deltaMs = performance.now() - nextBeatAt;
     const zone = judgeTiming(deltaMs);
-    comboZones.push(zone);
     playDiscoJingle(zone);
     playWiggle(zone);
     launchBurst(zone);
-
-    if (comboBeatIndex < COMBO_BEATS - 1) {
-      comboBeatIndex += 1;
-      beatStartAt = performance.now();
-      const aligned = getNextAlignedBeatPerfTime(1);
-      const beatMs = getBeatDurationMs();
-      if (aligned) {
-        nextBeatAt = aligned;
-        beatDurationMs = Math.max(260, nextBeatAt - beatStartAt);
-      } else {
-        beatDurationMs = beatMs > 0 ? beatMs : BEAT_GAP_MS;
-        nextBeatAt = beatStartAt + beatDurationMs;
-      }
-      render();
-      return;
-    }
-
-    state = applyAction(state, { type: "APPLY_COMBO", zones: comboZones });
+    state = applyAction(state, { type: "APPLY_JUDGMENT", zone });
     comboStreak = state.lastZone === "miss" ? 0 : comboStreak + 1;
     hypeText = getHypeText(state.lastZone, comboStreak);
-    lastComboFeedback = buildComboFeedback(comboZones, state.lastZone);
     lastShopMessage = "";
-    comboBeatIndex = 0;
-    comboZones = [];
-    beatStartAt = null;
-    nextBeatAt = null;
-    stopCountdownRender();
+
+    if (state.hasWon) {
+      nextBeatAt = null;
+      stopCountdownRender();
+    } else {
+      const aligned = getNextAlignedBeatPerfTime(TAP_BEAT_INTERVAL);
+      if (aligned) {
+        nextBeatAt = aligned;
+      } else {
+        nextBeatAt = performance.now() + beatDurationMs;
+      }
+    }
     render();
   });
 

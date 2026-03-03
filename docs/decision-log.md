@@ -71,3 +71,17 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Timing feels better when taps align directly with backing music.
 - Decision: Beat targets are now scheduled from the disco audio clock grid instead of fixed UI-only delays.
 - Consequences: Tap rhythm feels musically coherent, especially for beats 2 and 3 in combo rounds.
+
+## D-011 - Seven Rainbow Win Levels
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Creative direction requested explicit rainbow levels ending in a final win.
+- Decision: Progression is now ordered levels `Violet -> Indigo -> Blue -> Green -> Yellow -> Orange -> Red`; filling Red to 100 wins.
+- Consequences: Clear long-term goal and celebratory finish condition.
+
+## D-012 - Single-Tap Rhythm Lane
+- Date: 2026-03-02
+- Status: Accepted
+- Context: 3-combo taps felt too fast and less fun for current play style.
+- Decision: Replace combo rounds with a single-tap, music-synced incoming-note lane with visible upcoming beats.
+- Consequences: Simpler controls, better anticipation, and steadier rhythm gameplay.
