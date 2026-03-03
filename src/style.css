@@ -391,12 +391,12 @@ body {
 .sprite-stage.has-unicorn-crown .sprite::before {
   content: "👑";
   position: absolute;
-  top: -34px;
+  top: -52px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 44px;
+  font-size: 64px;
   line-height: 1;
-  filter: drop-shadow(0 0 10px rgba(255, 235, 148, 0.9));
+  filter: drop-shadow(0 0 14px rgba(255, 235, 148, 0.95));
   z-index: 5;
 }
 

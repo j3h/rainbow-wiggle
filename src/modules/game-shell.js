@@ -12,7 +12,7 @@ import {
 import { judgeTiming } from "./timing.js";
 
 const PREP_MS = 1200;
-const TAP_BEAT_INTERVAL = 2;
+const TAP_BEAT_PATTERN = [2, 3, 1, 2, 2, 1, 3, 2];
 const NOTE_PREVIEW_COUNT = 4;
 const LANE_START_PCT = 8;
 const LANE_TARGET_PCT = 90;
@@ -55,6 +55,10 @@ function mapCenterPctToBackgroundPosition(centerPct, scale) {
 
 function clamp01(value) {
   return Math.min(1, Math.max(0, value));
+}
+
+function getPatternValue(index) {
+  return TAP_BEAT_PATTERN[index % TAP_BEAT_PATTERN.length];
 }
 
 function getFrameSample(spriteTune, frameIndex) {
@@ -100,7 +104,8 @@ export function renderGameShell(container) {
 
   let state = createInitialState();
   let nextBeatAt = null;
-  let beatDurationMs = getBeatDurationMs() * TAP_BEAT_INTERVAL;
+  let beatDurationMs = getBeatDurationMs() * getPatternValue(0);
+  let beatPatternIndex = 0;
   let comboStreak = 0;
   let hypeText = "Ready to wiggle";
   let lastShopMessage = "";
@@ -611,7 +616,8 @@ export function renderGameShell(container) {
 
   const render = () => {
     const now = performance.now();
-    const beatIntervalMs = getBeatDurationMs() * TAP_BEAT_INTERVAL;
+    const currentBeatsAhead = getPatternValue(beatPatternIndex);
+    const beatIntervalMs = getBeatDurationMs() * currentBeatsAhead;
     if (nextBeatAt !== null && beatIntervalMs > 0) {
       while (nextBeatAt < now - 200) {
         nextBeatAt += beatIntervalMs;
@@ -687,9 +693,16 @@ export function renderGameShell(container) {
       beatCue.style.setProperty("--beat-progress", String(progress));
 
       noteEls.forEach((note, index) => {
-        const noteAt = nextBeatAt + index * beatIntervalMs;
+        let noteAt = nextBeatAt;
+        for (let step = 0; step < index; step += 1) {
+          const beatsAhead = getPatternValue(beatPatternIndex + step + 1);
+          noteAt += getBeatDurationMs() * beatsAhead;
+        }
         const delta = noteAt - now;
-        const lookAhead = beatIntervalMs * NOTE_PREVIEW_COUNT;
+        let lookAhead = 0;
+        for (let step = 0; step < NOTE_PREVIEW_COUNT; step += 1) {
+          lookAhead += getBeatDurationMs() * getPatternValue(beatPatternIndex + step);
+        }
         const normalized = clamp01(1 - delta / lookAhead);
         const lanePosition = LANE_START_PCT + normalized * laneSpan;
         note.style.left = `${lanePosition.toFixed(2)}%`;
@@ -709,12 +722,14 @@ export function renderGameShell(container) {
     }
 
     if (nextBeatAt === null) {
-      const firstBeat = getNextAlignedBeatPerfTime(TAP_BEAT_INTERVAL);
+      beatPatternIndex = 0;
+      const firstBeatsAhead = getPatternValue(beatPatternIndex);
+      const firstBeat = getNextAlignedBeatPerfTime(firstBeatsAhead);
       if (firstBeat) {
         nextBeatAt = firstBeat;
-        beatDurationMs = Math.max(420, getBeatDurationMs() * TAP_BEAT_INTERVAL);
+        beatDurationMs = Math.max(500, getBeatDurationMs() * firstBeatsAhead);
       } else {
-        beatDurationMs = Math.max(PREP_MS, getBeatDurationMs() * TAP_BEAT_INTERVAL);
+        beatDurationMs = Math.max(PREP_MS, getBeatDurationMs() * firstBeatsAhead);
         nextBeatAt = performance.now() + beatDurationMs;
       }
       startCountdownRender();
@@ -736,7 +751,10 @@ export function renderGameShell(container) {
       nextBeatAt = null;
       stopCountdownRender();
     } else {
-      const aligned = getNextAlignedBeatPerfTime(TAP_BEAT_INTERVAL);
+      beatPatternIndex += 1;
+      const beatsAhead = getPatternValue(beatPatternIndex);
+      beatDurationMs = Math.max(500, getBeatDurationMs() * beatsAhead);
+      const aligned = getNextAlignedBeatPerfTime(beatsAhead);
       if (aligned) {
         nextBeatAt = aligned;
       } else {

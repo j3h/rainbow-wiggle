@@ -92,3 +92,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Creative direction requested more variety in the shop.
 - Decision: Expand shop to five unlocks with escalating costs and distinct visual effects.
 - Consequences: Stronger long-term reward loop and more personalization for repeated sessions.
+
+## D-014 - Longer Progression + Variable Beat Gaps
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Directors wanted the game to be harder to finish immediately.
+- Decision: Reduce rainbow meter gains per hit and vary target beat spacing with a repeating beat-gap pattern.
+- Consequences: Levels take longer to clear and rhythm timing is less predictable while staying beat-synced.

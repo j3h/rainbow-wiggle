@@ -23,7 +23,7 @@ test("APPLY_JUDGMENT increments score and meter immutably", () => {
   assert.equal(before.score, 0);
   assert.equal(before.rainbowMeter, 0);
   assert.equal(after.score, 2);
-  assert.equal(after.rainbowMeter, 16);
+  assert.equal(after.rainbowMeter, 8);
   assert.equal(after.round, 2);
   assert.equal(after.lastZone, "good");
 });
@@ -33,7 +33,7 @@ test("rainbow progression advances through ordered levels and wins at Red", () =
   state = applyAction(state, { type: "APPLY_JUDGMENT", zone: "perfect" });
 
   assert.equal(state.rainbowStageIndex, RAINBOW_LEVELS.length - 1);
-  assert.equal(state.rainbowMeter, 14);
+  assert.equal(state.rainbowMeter, 3);
   assert.equal(state.hasWon, false);
 
   state = createInitialState({ rainbowStageIndex: RAINBOW_LEVELS.length - 1, rainbowMeter: 96 });

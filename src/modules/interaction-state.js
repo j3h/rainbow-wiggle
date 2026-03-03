@@ -3,9 +3,9 @@ export const RAINBOW_LEVELS = ["Violet", "Indigo", "Blue", "Green", "Yellow", "O
 const LAST_LEVEL_INDEX = RAINBOW_LEVELS.length - 1;
 
 const ZONE_EFFECTS = {
-  miss: { score: 0, meter: -6 },
-  good: { score: 2, meter: 16 },
-  perfect: { score: 3, meter: 24 }
+  miss: { score: 0, meter: -5 },
+  good: { score: 2, meter: 8 },
+  perfect: { score: 3, meter: 13 }
 };
 
 function clamp(value, min, max) {
