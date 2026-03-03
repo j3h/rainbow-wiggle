@@ -43,3 +43,17 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Single-tap timing was fun but too shallow.
 - Decision: Core action is now a 3-beat combo round with per-beat judgments and combo bonuses.
 - Consequences: Higher engagement per round while preserving touch simplicity on iPad.
+
+## D-007 - Rainbow Progression + Shop
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Creative direction requested levels of rainbowness and a shop.
+- Decision: Add rainbow level tiers tied to rainbow meter and a point-based shop for cosmetic upgrades.
+- Consequences: Clear long-term progression and reward loop without adding complex controls.
+
+## D-008 - Visual Beat Intro
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Audio count-in was hard to hear reliably during play sessions.
+- Decision: Primary timing cue is now visual (`3-2-1-TAP` badge + moving beat cursor lane).
+- Consequences: Timing remains playable even with low volume or noisy environment.

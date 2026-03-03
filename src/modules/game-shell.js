@@ -2,7 +2,6 @@ import { applyAction, createInitialState } from "./interaction-state.js";
 import { getLayoutMode } from "./layout.js";
 import {
   isDiscoLoopActive,
-  playCountIn,
   playDiscoJingle,
   startDiscoLoop,
   toggleDiscoLoop
@@ -89,6 +88,8 @@ export function renderGameShell(container) {
 
   let state = createInitialState();
   let nextBeatAt = null;
+  let beatStartAt = null;
+  let beatDurationMs = PREP_MS;
   let comboBeatIndex = 0;
   let comboZones = [];
   let lastComboFeedback = "";
@@ -139,6 +140,19 @@ export function renderGameShell(container) {
 
   const feedback = document.createElement("p");
   feedback.className = "feedback";
+
+  const beatCue = document.createElement("div");
+  beatCue.className = "beat-cue";
+  const beatBadge = document.createElement("p");
+  beatBadge.className = "beat-badge";
+  const beatLane = document.createElement("div");
+  beatLane.className = "beat-lane";
+  const beatTarget = document.createElement("div");
+  beatTarget.className = "beat-target";
+  const beatCursor = document.createElement("div");
+  beatCursor.className = "beat-cursor";
+  beatLane.append(beatTarget, beatCursor);
+  beatCue.append(beatBadge, beatLane);
 
   const shop = document.createElement("section");
   shop.className = "shop";
@@ -485,6 +499,22 @@ export function renderGameShell(container) {
     return "TAP NOW!";
   };
 
+  const getVisualCueText = (msUntilBeat) => {
+    if (msUntilBeat > 800) {
+      return "3";
+    }
+    if (msUntilBeat > 400) {
+      return "2";
+    }
+    if (msUntilBeat > 120) {
+      return "1";
+    }
+    if (msUntilBeat > -100) {
+      return "TAP!";
+    }
+    return "LATE";
+  };
+
   const stopCountdownRender = () => {
     if (countdownRaf !== null) {
       cancelAnimationFrame(countdownRaf);
@@ -537,6 +567,9 @@ export function renderGameShell(container) {
     if (nextBeatAt === null) {
       danceButton.textContent = "Start 3-Beat Dance Combo";
       danceButton.classList.remove("is-hot");
+      beatCue.classList.remove("is-live");
+      beatBadge.textContent = "READY";
+      beatCursor.style.left = "0%";
       if (!state.lastZone) {
         feedback.textContent = "Tap to start. Hit 3 beats in a row for combo bonuses.";
       } else if (lastShopMessage) {
@@ -549,8 +582,14 @@ export function renderGameShell(container) {
     } else {
       danceButton.textContent = `HIT BEAT ${comboBeatIndex + 1}/${COMBO_BEATS}`;
       const msUntilBeat = nextBeatAt - performance.now();
+      const elapsed = Math.max(0, Math.min(beatDurationMs, performance.now() - beatStartAt));
+      const progress = beatDurationMs <= 0 ? 1 : elapsed / beatDurationMs;
       feedback.textContent = `${getCountdownText(msUntilBeat)} Beat ${comboBeatIndex + 1}/${COMBO_BEATS}`;
       danceButton.classList.toggle("is-hot", msUntilBeat < 220);
+      beatCue.classList.add("is-live");
+      beatBadge.textContent = getVisualCueText(msUntilBeat);
+      beatBadge.classList.toggle("is-hot", msUntilBeat < 220 && msUntilBeat > -120);
+      beatCursor.style.left = `${Math.round(progress * 100)}%`;
     }
   };
 
@@ -564,8 +603,9 @@ export function renderGameShell(container) {
     if (nextBeatAt === null) {
       comboBeatIndex = 0;
       comboZones = [];
-      nextBeatAt = performance.now() + PREP_MS;
-      playCountIn(PREP_MS);
+      beatStartAt = performance.now();
+      beatDurationMs = PREP_MS;
+      nextBeatAt = beatStartAt + beatDurationMs;
       startCountdownRender();
       render();
       return;
@@ -579,7 +619,9 @@ export function renderGameShell(container) {
 
     if (comboBeatIndex < COMBO_BEATS - 1) {
       comboBeatIndex += 1;
-      nextBeatAt += BEAT_GAP_MS;
+      beatStartAt = performance.now();
+      beatDurationMs = BEAT_GAP_MS;
+      nextBeatAt = beatStartAt + beatDurationMs;
       render();
       return;
     }
@@ -589,6 +631,7 @@ export function renderGameShell(container) {
     lastShopMessage = "";
     comboBeatIndex = 0;
     comboZones = [];
+    beatStartAt = null;
     nextBeatAt = null;
     stopCountdownRender();
     render();
@@ -618,7 +661,7 @@ export function renderGameShell(container) {
   });
 
   controls.append(danceButton, musicButton);
-  shell.append(title, subtitle, stats, meterTrack, critters, spriteStage, feedback, controls, shop);
+  shell.append(title, subtitle, stats, meterTrack, critters, spriteStage, beatCue, feedback, controls, shop);
   applySpriteTune();
   updateMusicLabel();
   if (debugSprites) {

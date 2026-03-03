@@ -1,4 +1,5 @@
 let audioContext;
+let masterGain;
 let discoInterval = null;
 let discoEnabled = false;
 
@@ -15,6 +16,15 @@ function getAudioContext() {
   return audioContext;
 }
 
+function getMasterGain(ctx) {
+  if (!masterGain) {
+    masterGain = ctx.createGain();
+    masterGain.gain.value = 1;
+    masterGain.connect(ctx.destination);
+  }
+  return masterGain;
+}
+
 function playChipNote(ctx, startTime, duration, frequency, gainValue, type = "square") {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -27,7 +37,7 @@ function playChipNote(ctx, startTime, duration, frequency, gainValue, type = "sq
   gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
 
   osc.connect(gain);
-  gain.connect(ctx.destination);
+  gain.connect(getMasterGain(ctx));
 
   osc.start(startTime);
   osc.stop(startTime + duration + 0.02);
@@ -53,24 +63,7 @@ export function playDiscoJingle(zone) {
   const now = ctx.currentTime;
 
   tones.forEach((tone, index) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = "triangle";
-    osc.frequency.value = tone;
-
-    const start = now + index * 0.08;
-    const end = start + 0.11;
-
-    gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(0.06, start + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, end);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(start);
-    osc.stop(end);
+    playChipNote(ctx, now + index * 0.08, 0.11, tone, 0.06, "triangle");
   });
 }
 
@@ -89,21 +82,7 @@ export function playCountIn(delayMs = 1200) {
   const step = beatDelayS / 3;
 
   const click = (time, frequency, gainValue) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = "square";
-    osc.frequency.value = frequency;
-
-    gain.gain.setValueAtTime(0.0001, time);
-    gain.gain.exponentialRampToValueAtTime(gainValue, time + 0.008);
-    gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.09);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(time);
-    osc.stop(time + 0.1);
+    playChipNote(ctx, time, 0.09, frequency, gainValue, "square");
   };
 
   click(now + 0 * step, 900, 0.03);
@@ -150,6 +129,8 @@ export function startDiscoLoop() {
     ctx.resume();
   }
 
+  getMasterGain(ctx).gain.setValueAtTime(1, ctx.currentTime);
+
   if (discoEnabled) {
     return true;
   }
@@ -174,6 +155,15 @@ export function stopDiscoLoop() {
     clearInterval(discoInterval);
     discoInterval = null;
   }
+
+  const ctx = getAudioContext();
+  if (!ctx || !masterGain) {
+    return;
+  }
+
+  masterGain.gain.cancelScheduledValues(ctx.currentTime);
+  masterGain.gain.setValueAtTime(masterGain.gain.value || 1, ctx.currentTime);
+  masterGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.04);
 }
 
 export function toggleDiscoLoop() {
