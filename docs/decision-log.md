@@ -155,3 +155,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Decorative visual layers may overlap the shop region and intermittently steal taps.
 - Decision: Make all sprite-stage visuals non-interactive and raise the side-panel/shop stacking context.
 - Consequences: Shop buttons remain consistently tappable while keeping effects visible.
+
+## D-023 - Progressive Shop Reveal
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Shop copy should feel cleaner than showing repeated "need points" text.
+- Decision: Hide locked items until the player has reached each item's cost threshold at least once in the current run.
+- Consequences: Cleaner shop list and clearer sense of unlocking as score increases.

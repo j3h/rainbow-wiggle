@@ -111,6 +111,7 @@ export function renderGameShell(container) {
   let comboStreak = 0;
   let hypeText = "Ready to wiggle";
   let lastShopMessage = "";
+  let maxScoreSeen = state.score;
   let countdownRaf = null;
   let isPaused = false;
   let pauseHasActiveRound = false;
@@ -734,6 +735,7 @@ export function renderGameShell(container) {
     shell.dataset.energy = String(getEnergyLevel(state.rainbowMeter));
     const levelName = RAINBOW_LEVELS[state.rainbowStageIndex];
     shell.dataset.level = levelName.toLowerCase();
+    maxScoreSeen = Math.max(maxScoreSeen, state.score);
     stats.textContent = String(state.score);
     stats.setAttribute("aria-label", `Score ${state.score}`);
     meterFill.style.width = `${state.rainbowMeter}%`;
@@ -753,11 +755,16 @@ export function renderGameShell(container) {
     SHOP_ITEMS.forEach((item, index) => {
       const owned = state.ownedItems.includes(item.id);
       const affordable = state.score >= item.cost;
+      const revealed = owned || maxScoreSeen >= item.cost;
       const button = shopButtons[index];
-      button.disabled = owned;
+      button.hidden = !revealed;
+      button.disabled = owned || !affordable;
+      if (!revealed) {
+        return;
+      }
       button.textContent = owned
         ? `${item.name} - Owned`
-        : `${item.name} (${item.cost}) - ${item.effect}${affordable ? "" : " (Need points)"}`;
+        : `${item.name} (${item.cost}) - ${item.effect}`;
     });
 
     if (nextBeatAt === null) {
@@ -943,6 +950,7 @@ export function renderGameShell(container) {
     comboStreak = 0;
     hypeText = "Ready to wiggle";
     lastShopMessage = "";
+    maxScoreSeen = state.score;
     isPaused = false;
     pauseHasActiveRound = false;
     resumeMusicAfterPause = false;
@@ -961,7 +969,7 @@ export function renderGameShell(container) {
       if (state.ownedItems.length > beforeOwned) {
         lastShopMessage = `Shop: ${item.name} unlocked!`;
       } else if (beforeScore < item.cost) {
-        lastShopMessage = `Shop: Need ${item.cost - beforeScore} more dance points for ${item.name}.`;
+        lastShopMessage = `Shop: ${item.name} costs ${item.cost}.`;
       } else {
         lastShopMessage = `Shop: ${item.name} already owned.`;
       }
