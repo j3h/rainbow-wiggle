@@ -227,10 +227,6 @@ export function renderGameShell(container) {
   const sidePanel = document.createElement("aside");
   sidePanel.className = "side-panel";
 
-  const danceButton = document.createElement("button");
-  danceButton.className = "action";
-  danceButton.type = "button";
-
   const musicButton = document.createElement("button");
   musicButton.className = "action action-secondary";
   musicButton.type = "button";
@@ -240,6 +236,10 @@ export function renderGameShell(container) {
   playAgainButton.className = "action action-replay";
   playAgainButton.type = "button";
   playAgainButton.textContent = "Play Again";
+
+  beatLane.setAttribute("role", "button");
+  beatLane.setAttribute("tabindex", "0");
+  beatLane.setAttribute("aria-label", "Rhythm lane. Tap when orange notes reach the target zone.");
 
   const shopButtons = SHOP_ITEMS.map((item) => {
     const button = document.createElement("button");
@@ -682,8 +682,7 @@ export function renderGameShell(container) {
     });
 
     if (nextBeatAt === null) {
-      danceButton.textContent = "Start Rhythm Lane";
-      danceButton.classList.remove("is-hot");
+      beatLane.classList.remove("is-hot");
       beatCue.classList.remove("is-live");
       beatBadge.textContent = "READY";
       beatCue.style.setProperty("--beat-progress", "0");
@@ -694,7 +693,7 @@ export function renderGameShell(container) {
         note.style.opacity = "0";
       });
       if (!state.lastZone) {
-        feedback.textContent = "Tap to start. Hit when notes line up in the target zone.";
+        feedback.textContent = "Tap the lane to start. Hit orange notes in the target zone.";
       } else if (lastShopMessage) {
         feedback.textContent = lastShopMessage;
       } else if (state.hasWon) {
@@ -704,12 +703,11 @@ export function renderGameShell(container) {
       }
       hype.textContent = hypeText;
     } else {
-      danceButton.textContent = "TAP ON BEAT";
       const msUntilBeat = nextBeatAt - now;
       const progress = beatDurationMs <= 0 ? 1 : clamp01(1 - msUntilBeat / beatDurationMs);
       const laneSpan = LANE_TARGET_PCT - LANE_START_PCT;
       feedback.textContent = `${getCountdownText(msUntilBeat)} Keep the rhythm!`;
-      danceButton.classList.toggle("is-hot", msUntilBeat < 220);
+      beatLane.classList.toggle("is-hot", msUntilBeat < 220 && msUntilBeat > -140);
       beatCue.classList.add("is-live");
       beatBadge.textContent = getVisualCueText(msUntilBeat, beatDurationMs);
       beatBadge.classList.toggle("is-hot", msUntilBeat < 220 && msUntilBeat > -120);
@@ -744,7 +742,7 @@ export function renderGameShell(container) {
     playAgainButton.disabled = !state.hasWon;
   };
 
-  danceButton.addEventListener("click", () => {
+  const handleLaneTap = () => {
     if (!musicStarted) {
       startDiscoLoop();
       musicStarted = true;
@@ -796,6 +794,14 @@ export function renderGameShell(container) {
       }
     }
     render();
+  };
+
+  beatLane.addEventListener("click", handleLaneTap);
+  beatLane.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleLaneTap();
+    }
   });
 
   musicButton.addEventListener("click", () => {
@@ -835,7 +841,7 @@ export function renderGameShell(container) {
     });
   });
 
-  controls.append(danceButton, musicButton, playAgainButton);
+  controls.append(musicButton, playAgainButton);
   playPanel.append(meterTrack, critters, spriteStage, beatCue, feedback, hype, controls);
   sidePanel.append(shop);
   shellBody.append(playPanel, sidePanel);
