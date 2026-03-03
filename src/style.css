@@ -571,6 +571,15 @@ body {
   background: linear-gradient(135deg, #2d8f9e, #46b4c3);
 }
 
+.action-replay {
+  display: none;
+  background: linear-gradient(135deg, #8f2d6f, #c34696);
+}
+
+.action-replay.is-visible {
+  display: block;
+}
+
 .action:active {
   transform: translateY(1px);
 }

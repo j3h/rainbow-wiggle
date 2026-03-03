@@ -226,6 +226,11 @@ export function renderGameShell(container) {
   musicButton.type = "button";
   musicButton.textContent = "Music: Off";
 
+  const playAgainButton = document.createElement("button");
+  playAgainButton.className = "action action-replay";
+  playAgainButton.type = "button";
+  playAgainButton.textContent = "Play Again";
+
   const shopButtons = SHOP_ITEMS.map((item) => {
     const button = document.createElement("button");
     button.type = "button";
@@ -712,6 +717,9 @@ export function renderGameShell(container) {
       pipEls[0].classList.add("is-current");
       hype.textContent = "Watch incoming notes and tap in the zone!";
     }
+
+    playAgainButton.classList.toggle("is-visible", state.hasWon);
+    playAgainButton.disabled = !state.hasWon;
   };
 
   danceButton.addEventListener("click", () => {
@@ -770,6 +778,20 @@ export function renderGameShell(container) {
     updateMusicLabel();
   });
 
+  playAgainButton.addEventListener("click", () => {
+    state = createInitialState({
+      title: state.title,
+      ownedItems: state.ownedItems
+    });
+    nextBeatAt = null;
+    beatPatternIndex = 0;
+    comboStreak = 0;
+    hypeText = "Ready to wiggle";
+    lastShopMessage = "";
+    stopCountdownRender();
+    render();
+  });
+
   shopButtons.forEach((button, index) => {
     const item = SHOP_ITEMS[index];
     button.addEventListener("click", () => {
@@ -787,7 +809,7 @@ export function renderGameShell(container) {
     });
   });
 
-  controls.append(danceButton, musicButton);
+  controls.append(danceButton, musicButton, playAgainButton);
   playPanel.append(meterTrack, critters, spriteStage, beatCue, feedback, hype, controls);
   sidePanel.append(shop);
   shellBody.append(playPanel, sidePanel);
