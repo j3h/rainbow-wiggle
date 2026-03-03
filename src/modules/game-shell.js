@@ -148,6 +148,8 @@ export function renderGameShell(container) {
   burstLayer.className = "burst-layer";
   const spotlight = document.createElement("div");
   spotlight.className = "spotlight";
+  const partyLaserLayer = document.createElement("div");
+  partyLaserLayer.className = "party-laser-layer";
   const discoBallChain = document.createElement("div");
   discoBallChain.className = "disco-ball-chain";
   const discoBallDecor = document.createElement("div");
@@ -172,6 +174,7 @@ export function renderGameShell(container) {
   dogSprite.setAttribute("aria-label", "Dog butt wiggle");
 
   spriteStage.append(
+    partyLaserLayer,
     catSprite,
     dogSprite,
     burstLayer,
@@ -655,6 +658,7 @@ export function renderGameShell(container) {
     SHOP_ITEMS.forEach((item) => {
       spriteStage.classList.toggle(`has-${item.id}`, state.ownedItems.includes(item.id));
     });
+    partyLaserLayer.classList.toggle("is-visible", state.ownedItems.includes("party-lasers"));
     discoBallChain.classList.toggle("is-visible", state.ownedItems.includes("disco-ball"));
     discoBallDecor.classList.toggle("is-visible", state.ownedItems.includes("disco-ball"));
     discoBallRays.classList.toggle("is-visible", state.ownedItems.includes("disco-ball"));
