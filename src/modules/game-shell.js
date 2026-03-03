@@ -26,6 +26,7 @@ const SHOP_ITEMS = [
   { id: "disco-sparkles", name: "Disco Sparkles", cost: 20, effect: "Sparkle storm around dancers" },
   { id: "rainbow-trail", name: "Rainbow Trail", cost: 28, effect: "Rainbow motion trails behind wiggles" },
   { id: "party-lasers", name: "Party Lasers", cost: 36, effect: "Moving laser beams in the background" },
+  { id: "disco-ball", name: "Disco Ball", cost: 44, effect: "Spinning disco ball over the dance floor" },
   { id: "unicorn-crown", name: "Unicorn Crown", cost: 50, effect: "Legend crown sparkles for both dancers" }
 ];
 const DEFAULT_SPRITE_TUNE = {
@@ -155,6 +156,12 @@ export function renderGameShell(container) {
   spriteStage.className = "sprite-stage";
   const burstLayer = document.createElement("div");
   burstLayer.className = "burst-layer";
+  const spotlight = document.createElement("div");
+  spotlight.className = "spotlight";
+  const discoBallDecor = document.createElement("div");
+  discoBallDecor.className = "disco-ball-decor";
+  const winEffectsLayer = document.createElement("div");
+  winEffectsLayer.className = "win-effects";
 
   const catSprite = document.createElement("div");
   catSprite.className = "sprite sprite-cat";
@@ -164,7 +171,7 @@ export function renderGameShell(container) {
   dogSprite.className = "sprite sprite-dog";
   dogSprite.setAttribute("aria-label", "Dog butt wiggle");
 
-  spriteStage.append(catSprite, dogSprite, burstLayer);
+  spriteStage.append(catSprite, dogSprite, burstLayer, spotlight, discoBallDecor, winEffectsLayer);
 
   const feedback = document.createElement("p");
   feedback.className = "feedback";
@@ -302,6 +309,20 @@ export function renderGameShell(container) {
 
   const updateMusicLabel = () => {
     musicButton.textContent = isDiscoLoopActive() ? "Music: On" : "Music: Off";
+  };
+
+  const launchWinCelebration = () => {
+    for (let index = 0; index < 60; index += 1) {
+      const piece = document.createElement("span");
+      piece.className = "win-confetti";
+      piece.style.left = `${Math.random() * 100}%`;
+      piece.style.setProperty("--drift-x", `${-40 + Math.random() * 80}px`);
+      piece.style.setProperty("--fall-time", `${1.6 + Math.random() * 1.2}s`);
+      piece.style.setProperty("--delay", `${Math.random() * 0.35}s`);
+      piece.style.setProperty("--hue", `${Math.floor(Math.random() * 360)}deg`);
+      winEffectsLayer.append(piece);
+      setTimeout(() => piece.remove(), 3400);
+    }
   };
 
   const launchBurst = (zone) => {
@@ -649,6 +670,8 @@ export function renderGameShell(container) {
     SHOP_ITEMS.forEach((item) => {
       spriteStage.classList.toggle(`has-${item.id}`, state.ownedItems.includes(item.id));
     });
+    discoBallDecor.classList.toggle("is-visible", state.ownedItems.includes("disco-ball"));
+    shell.classList.toggle("is-win", state.hasWon);
 
     SHOP_ITEMS.forEach((item, index) => {
       const owned = state.ownedItems.includes(item.id);
@@ -746,11 +769,15 @@ export function renderGameShell(container) {
     }
 
     const deltaMs = performance.now() - nextBeatAt;
+    const hadWonBefore = state.hasWon;
     const zone = judgeTiming(deltaMs);
     playDiscoJingle(zone);
     playWiggle(zone);
     launchBurst(zone);
     state = applyAction(state, { type: "APPLY_JUDGMENT", zone });
+    if (!hadWonBefore && state.hasWon) {
+      launchWinCelebration();
+    }
     comboStreak = state.lastZone === "miss" ? 0 : comboStreak + 1;
     hypeText = getHypeText(state.lastZone, comboStreak);
     lastShopMessage = "";

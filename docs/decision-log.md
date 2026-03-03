@@ -99,3 +99,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Directors wanted the game to be harder to finish immediately.
 - Decision: Reduce rainbow meter gains per hit and vary target beat spacing with a repeating beat-gap pattern.
 - Consequences: Levels take longer to clear and rhythm timing is less predictable while staying beat-synced.
+
+## D-015 - Disco Ball + Win Celebration FX
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Creative direction requested more shop content and a stronger win moment.
+- Decision: Add `Disco Ball` shop unlock and trigger spotlight + rainbow confetti effects on final Red-level win.
+- Consequences: Clearer celebration payoff and richer visual progression loop.

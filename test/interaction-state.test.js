@@ -68,3 +68,11 @@ test("BUY_ITEM does nothing when score is insufficient", () => {
   assert.equal(after.score, 4);
   assert.deepEqual(after.ownedItems, []);
 });
+
+test("BUY_ITEM can unlock disco-ball when affordable", () => {
+  const before = createInitialState({ score: 50, ownedItems: [] });
+  const after = applyAction(before, { type: "BUY_ITEM", itemId: "disco-ball", cost: 44 });
+
+  assert.equal(after.score, 6);
+  assert.deepEqual(after.ownedItems, ["disco-ball"]);
+});
