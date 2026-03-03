@@ -206,6 +206,8 @@ export function renderGameShell(container) {
   beatPips.append(...pipEls);
   const beatLane = document.createElement("div");
   beatLane.className = "beat-lane";
+  meterTrack.classList.add("lane-meter-track");
+  meterFill.classList.add("lane-meter-fill");
   const hitFxLayer = document.createElement("div");
   hitFxLayer.className = "hit-fx-layer";
   const beatTarget = document.createElement("div");
@@ -217,7 +219,7 @@ export function renderGameShell(container) {
   });
   const beatZone = document.createElement("div");
   beatZone.className = "beat-zone";
-  beatLane.append(hitFxLayer, beatTarget, beatZone, ...noteEls);
+  beatLane.append(meterTrack, hitFxLayer, beatTarget, beatZone, ...noteEls);
   beatCue.append(beatBadge, beatPips, beatLane);
 
   const shop = document.createElement("section");
@@ -870,7 +872,7 @@ export function renderGameShell(container) {
   });
 
   controls.append(musicButton, playAgainButton);
-  playPanel.append(meterTrack, critters, spriteStage, beatCue, feedback, hype, controls);
+  playPanel.append(critters, spriteStage, beatCue, feedback, hype, controls);
   sidePanel.append(shop);
   shellBody.append(playPanel, sidePanel);
   shell.append(title, subtitle, stats, shellBody);

@@ -107,13 +107,33 @@ body {
 .beat-lane {
   position: relative;
   min-height: 56px;
-  height: 26px;
+  height: 56px;
   border-radius: 999px;
   border: 2px solid #d7c8ac;
   background: linear-gradient(90deg, #ece5d6, #fdf8ec);
   overflow: hidden;
   cursor: pointer;
   touch-action: manipulation;
+}
+
+.lane-meter-track {
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  bottom: 6px;
+  width: auto;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 248, 232, 0.7);
+  box-shadow: inset 0 0 0 1px rgba(40, 32, 20, 0.12);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.lane-meter-fill {
+  background: linear-gradient(90deg, #bc77ea, #6f84ff, #4eb4ff, #67d779, #f0d85a, #f39b4d, #ec5f4f);
+  box-shadow: 0 0 12px rgba(255, 208, 107, 0.45);
 }
 
 .hit-fx-layer {
@@ -189,7 +209,7 @@ body {
 .beat-target {
   position: absolute;
   right: 10%;
-  top: 2px;
+  top: 10px;
   width: 6px;
   height: 18px;
   border-radius: 999px;
@@ -200,7 +220,7 @@ body {
 .beat-zone {
   position: absolute;
   right: 7%;
-  top: 1px;
+  top: 9px;
   width: 14%;
   height: 20px;
   border-radius: 999px;
@@ -212,7 +232,7 @@ body {
 .beat-note {
   position: absolute;
   left: 0%;
-  top: 4px;
+  top: 12px;
   width: 16px;
   height: 16px;
   margin-left: -8px;
