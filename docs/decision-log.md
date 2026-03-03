@@ -64,3 +64,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Experience needed stronger excitement and clearer reward feeling.
 - Decision: Add hype text, burst effects on successful beats, and shell energy visuals tied to rainbow progression.
 - Consequences: More readable fun feedback without changing core controls.
+
+## D-010 - Music-Synced Tap Targets
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Timing feels better when taps align directly with backing music.
+- Decision: Beat targets are now scheduled from the disco audio clock grid instead of fixed UI-only delays.
+- Consequences: Tap rhythm feels musically coherent, especially for beats 2 and 3 in combo rounds.

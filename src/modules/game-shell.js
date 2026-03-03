@@ -2,6 +2,8 @@ import { applyAction, createInitialState } from "./interaction-state.js";
 import { getLayoutMode } from "./layout.js";
 import { getEnergyLevel, getHypeText } from "./fun-mode.js";
 import {
+  getBeatDurationMs,
+  getNextAlignedBeatPerfTime,
   isDiscoLoopActive,
   playDiscoJingle,
   startDiscoLoop,
@@ -651,9 +653,15 @@ export function renderGameShell(container) {
     if (nextBeatAt === null) {
       comboBeatIndex = 0;
       comboZones = [];
+      const firstBeat = getNextAlignedBeatPerfTime(2);
       beatStartAt = performance.now();
-      beatDurationMs = PREP_MS;
-      nextBeatAt = beatStartAt + beatDurationMs;
+      if (firstBeat) {
+        nextBeatAt = firstBeat;
+        beatDurationMs = Math.max(280, nextBeatAt - beatStartAt);
+      } else {
+        beatDurationMs = PREP_MS;
+        nextBeatAt = beatStartAt + beatDurationMs;
+      }
       startCountdownRender();
       render();
       return;
@@ -669,8 +677,15 @@ export function renderGameShell(container) {
     if (comboBeatIndex < COMBO_BEATS - 1) {
       comboBeatIndex += 1;
       beatStartAt = performance.now();
-      beatDurationMs = BEAT_GAP_MS;
-      nextBeatAt = beatStartAt + beatDurationMs;
+      const aligned = getNextAlignedBeatPerfTime(1);
+      const beatMs = getBeatDurationMs();
+      if (aligned) {
+        nextBeatAt = aligned;
+        beatDurationMs = Math.max(260, nextBeatAt - beatStartAt);
+      } else {
+        beatDurationMs = beatMs > 0 ? beatMs : BEAT_GAP_MS;
+        nextBeatAt = beatStartAt + beatDurationMs;
+      }
       render();
       return;
     }

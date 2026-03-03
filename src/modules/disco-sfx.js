@@ -2,6 +2,13 @@ let audioContext;
 let masterGain;
 let discoInterval = null;
 let discoEnabled = false;
+let loopStartAudioTime = null;
+let loopStartPerfTime = null;
+let nextBarAudioTime = null;
+
+const BPM = 120;
+const BEAT_SECONDS = 60 / BPM; // quarter note
+const BAR_SECONDS = BEAT_SECONDS * 8;
 
 function getAudioContext() {
   const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -41,6 +48,71 @@ function playChipNote(ctx, startTime, duration, frequency, gainValue, type = "sq
 
   osc.start(startTime);
   osc.stop(startTime + duration + 0.02);
+}
+
+function scheduleDiscoBar(ctx, barStart) {
+  const sixteenth = BEAT_SECONDS / 4;
+  const leadPattern = [
+    659, 0, 784, 0, 659, 0, 988, 0, 880, 0, 784, 0, 659, 0, 587, 0,
+    659, 0, 784, 0, 880, 0, 988, 0, 784, 0, 659, 0, 587, 0, 523, 0
+  ];
+  const bassPattern = [131, 131, 147, 147, 131, 131, 165, 165];
+
+  leadPattern.forEach((freq, index) => {
+    if (!freq) {
+      return;
+    }
+
+    playChipNote(ctx, barStart + index * sixteenth, sixteenth * 0.75, freq, 0.02, "square");
+  });
+
+  bassPattern.forEach((freq, index) => {
+    const time = barStart + index * BEAT_SECONDS;
+    playChipNote(ctx, time, BEAT_SECONDS * 0.7, freq, 0.03, "triangle");
+    playChipNote(ctx, time + BEAT_SECONDS * 0.5, BEAT_SECONDS * 0.18, freq * 2, 0.012, "square");
+  });
+
+  for (let index = 0; index < 32; index += 1) {
+    const t = barStart + index * sixteenth;
+    playChipNote(ctx, t, 0.02, 3200, index % 2 === 0 ? 0.004 : 0.0025, "square");
+  }
+}
+
+function startScheduler(ctx) {
+  if (discoInterval !== null) {
+    clearInterval(discoInterval);
+  }
+
+  discoInterval = setInterval(() => {
+    if (!discoEnabled || nextBarAudioTime === null) {
+      return;
+    }
+
+    const scheduleAhead = ctx.currentTime + 1.25;
+    while (nextBarAudioTime <= scheduleAhead) {
+      scheduleDiscoBar(ctx, nextBarAudioTime);
+      nextBarAudioTime += BAR_SECONDS;
+    }
+  }, 180);
+}
+
+export function getBeatDurationMs() {
+  return BEAT_SECONDS * 1000;
+}
+
+export function getNextAlignedBeatPerfTime(beatsAhead = 1) {
+  const ctx = getAudioContext();
+  if (!ctx || loopStartAudioTime === null || loopStartPerfTime === null) {
+    return null;
+  }
+
+  const safeAhead = Number.isInteger(beatsAhead) && beatsAhead > 0 ? beatsAhead : 1;
+  const audioNow = ctx.currentTime;
+  const beatsSinceStart = (audioNow - loopStartAudioTime) / BEAT_SECONDS;
+  const nextBeatIndex = Math.ceil(beatsSinceStart + safeAhead - 1);
+  const nextBeatAudio = loopStartAudioTime + nextBeatIndex * BEAT_SECONDS;
+  const deltaMs = (nextBeatAudio - audioNow) * 1000;
+  return performance.now() + deltaMs;
 }
 
 export function playDiscoJingle(zone) {
@@ -91,34 +163,6 @@ export function playCountIn(delayMs = 1200) {
   click(now + 3 * step, 1200, 0.05);
 }
 
-function scheduleDiscoBar(ctx, barStart) {
-  const beat = 0.125;
-  const leadPattern = [
-    659, 0, 784, 0, 659, 0, 988, 0, 880, 0, 784, 0, 659, 0, 587, 0,
-    659, 0, 784, 0, 880, 0, 988, 0, 784, 0, 659, 0, 587, 0, 523, 0
-  ];
-  const bassPattern = [131, 131, 147, 147, 131, 131, 165, 165];
-
-  leadPattern.forEach((freq, index) => {
-    if (!freq) {
-      return;
-    }
-
-    playChipNote(ctx, barStart + index * beat, beat * 0.75, freq, 0.02, "square");
-  });
-
-  bassPattern.forEach((freq, index) => {
-    const time = barStart + index * beat * 4;
-    playChipNote(ctx, time, beat * 2.8, freq, 0.03, "triangle");
-    playChipNote(ctx, time + beat * 2, beat * 0.6, freq * 2, 0.01, "square");
-  });
-
-  for (let index = 0; index < 32; index += 1) {
-    const t = barStart + index * beat;
-    playChipNote(ctx, t, 0.03, 3200, index % 2 === 0 ? 0.004 : 0.0025, "square");
-  }
-}
-
 export function startDiscoLoop() {
   const ctx = getAudioContext();
   if (!ctx) {
@@ -136,15 +180,10 @@ export function startDiscoLoop() {
   }
 
   discoEnabled = true;
-  const barDuration = 4;
-  scheduleDiscoBar(ctx, ctx.currentTime + 0.02);
-
-  discoInterval = setInterval(() => {
-    if (!discoEnabled) {
-      return;
-    }
-    scheduleDiscoBar(ctx, ctx.currentTime + 0.02);
-  }, barDuration * 1000);
+  loopStartAudioTime = ctx.currentTime + 0.08;
+  loopStartPerfTime = performance.now() + 80;
+  nextBarAudioTime = loopStartAudioTime;
+  startScheduler(ctx);
 
   return true;
 }
@@ -162,7 +201,7 @@ export function stopDiscoLoop() {
   }
 
   masterGain.gain.cancelScheduledValues(ctx.currentTime);
-  masterGain.gain.setValueAtTime(masterGain.gain.value || 1, ctx.currentTime);
+  masterGain.gain.setValueAtTime(Math.max(0.0001, masterGain.gain.value || 1), ctx.currentTime);
   masterGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.04);
 }
 
