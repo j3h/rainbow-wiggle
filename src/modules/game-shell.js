@@ -14,6 +14,8 @@ import { judgeTiming } from "./timing.js";
 const PREP_MS = 1200;
 const TAP_BEAT_INTERVAL = 2;
 const NOTE_PREVIEW_COUNT = 4;
+const LANE_START_PCT = 8;
+const LANE_TARGET_PCT = 90;
 const WIGGLE_MS = 850;
 const SPRITE_SHEET_SRC = "/src/assets/sprites/cat-dog-butt-wiggle-base.png";
 const FALLBACK_SHEET_ASPECT = 1536 / 1024;
@@ -632,7 +634,7 @@ export function renderGameShell(container) {
       danceButton.classList.remove("is-hot");
       beatCue.classList.remove("is-live");
       beatBadge.textContent = "READY";
-      beatCursor.style.left = "0%";
+      beatCursor.style.left = `${LANE_START_PCT}%`;
       beatCue.style.setProperty("--beat-progress", "0");
       beatCue.classList.remove("is-window");
       pipEls[0].classList.remove("is-done");
@@ -654,21 +656,23 @@ export function renderGameShell(container) {
       danceButton.textContent = "TAP ON BEAT";
       const msUntilBeat = nextBeatAt - now;
       const progress = beatDurationMs <= 0 ? 1 : clamp01(1 - msUntilBeat / beatDurationMs);
+      const laneSpan = LANE_TARGET_PCT - LANE_START_PCT;
       feedback.textContent = `${getCountdownText(msUntilBeat)} Keep the rhythm!`;
       danceButton.classList.toggle("is-hot", msUntilBeat < 220);
       beatCue.classList.add("is-live");
       beatBadge.textContent = getVisualCueText(msUntilBeat, beatDurationMs);
       beatBadge.classList.toggle("is-hot", msUntilBeat < 220 && msUntilBeat > -120);
       beatCue.classList.toggle("is-window", msUntilBeat < 220 && msUntilBeat > -140);
-      beatCursor.style.left = `${Math.round(progress * 100)}%`;
+      beatCursor.style.left = `${(LANE_START_PCT + progress * laneSpan).toFixed(2)}%`;
       beatCue.style.setProperty("--beat-progress", String(progress));
 
       noteEls.forEach((note, index) => {
         const noteAt = nextBeatAt + index * beatIntervalMs;
         const delta = noteAt - now;
         const lookAhead = beatIntervalMs * NOTE_PREVIEW_COUNT;
-        const position = clamp01(1 - delta / lookAhead);
-        note.style.left = `${Math.round(position * 100)}%`;
+        const normalized = clamp01(1 - delta / lookAhead);
+        const lanePosition = LANE_START_PCT + normalized * laneSpan;
+        note.style.left = `${lanePosition.toFixed(2)}%`;
         note.style.opacity = delta < -220 ? "0" : "1";
         note.classList.toggle("is-next", index === 0);
       });
