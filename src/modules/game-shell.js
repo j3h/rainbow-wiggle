@@ -160,6 +160,12 @@ export function renderGameShell(container) {
   spotlight.className = "spotlight";
   const discoBallDecor = document.createElement("div");
   discoBallDecor.className = "disco-ball-decor";
+  const unicornLeft = document.createElement("div");
+  unicornLeft.className = "unicorn-mascot unicorn-left";
+  unicornLeft.textContent = "🦄";
+  const unicornRight = document.createElement("div");
+  unicornRight.className = "unicorn-mascot unicorn-right";
+  unicornRight.textContent = "🦄";
   const winEffectsLayer = document.createElement("div");
   winEffectsLayer.className = "win-effects";
 
@@ -171,7 +177,16 @@ export function renderGameShell(container) {
   dogSprite.className = "sprite sprite-dog";
   dogSprite.setAttribute("aria-label", "Dog butt wiggle");
 
-  spriteStage.append(catSprite, dogSprite, burstLayer, spotlight, discoBallDecor, winEffectsLayer);
+  spriteStage.append(
+    catSprite,
+    dogSprite,
+    burstLayer,
+    spotlight,
+    discoBallDecor,
+    unicornLeft,
+    unicornRight,
+    winEffectsLayer
+  );
 
   const feedback = document.createElement("p");
   feedback.className = "feedback";
@@ -671,6 +686,9 @@ export function renderGameShell(container) {
       spriteStage.classList.toggle(`has-${item.id}`, state.ownedItems.includes(item.id));
     });
     discoBallDecor.classList.toggle("is-visible", state.ownedItems.includes("disco-ball"));
+    const showUnicorn = state.ownedItems.includes("unicorn-crown");
+    unicornLeft.classList.toggle("is-visible", showUnicorn);
+    unicornRight.classList.toggle("is-visible", showUnicorn);
     shell.classList.toggle("is-win", state.hasWon);
 
     SHOP_ITEMS.forEach((item, index) => {

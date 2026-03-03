@@ -379,6 +379,35 @@ body {
   animation: discoBallSpin 1.8s linear infinite;
 }
 
+.unicorn-mascot {
+  position: absolute;
+  bottom: -6px;
+  font-size: 58px;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px) scale(0.8);
+  filter: drop-shadow(0 0 8px rgba(255, 183, 238, 0.65));
+}
+
+.unicorn-left {
+  left: -10px;
+}
+
+.unicorn-right {
+  right: -10px;
+  transform: translateY(10px) scale(0.8) scaleX(-1);
+}
+
+.unicorn-mascot.is-visible {
+  opacity: 1;
+  animation: unicornBounce 0.95s ease-in-out infinite alternate;
+}
+
+.unicorn-right.is-visible {
+  animation-name: unicornBounceMirror;
+}
+
 .win-effects {
   position: absolute;
   inset: -12px 0 0 0;
@@ -855,6 +884,24 @@ body {
   to {
     filter: brightness(1.08);
     transform: scaleY(1.04);
+  }
+}
+
+@keyframes unicornBounce {
+  from {
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    transform: translateY(-2px) scale(1);
+  }
+}
+
+@keyframes unicornBounceMirror {
+  from {
+    transform: translateY(8px) scale(0.95) scaleX(-1);
+  }
+  to {
+    transform: translateY(-2px) scale(1) scaleX(-1);
   }
 }
 
