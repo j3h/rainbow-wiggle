@@ -21,7 +21,10 @@ const FRAME_INSET_X_PCT = 0.5;
 const FRAME_INSET_Y_PCT = 0.5;
 const SHOP_ITEMS = [
   { id: "neon-collar", name: "Neon Collar", cost: 12, effect: "Neon glow aura" },
-  { id: "disco-sparkles", name: "Disco Sparkles", cost: 20, effect: "Sparkle burst around dancers" }
+  { id: "disco-sparkles", name: "Disco Sparkles", cost: 20, effect: "Sparkle storm around dancers" },
+  { id: "rainbow-trail", name: "Rainbow Trail", cost: 28, effect: "Rainbow motion trails behind wiggles" },
+  { id: "party-lasers", name: "Party Lasers", cost: 36, effect: "Moving laser beams in the background" },
+  { id: "unicorn-crown", name: "Unicorn Crown", cost: 50, effect: "Legend crown sparkles for both dancers" }
 ];
 const DEFAULT_SPRITE_TUNE = {
   zoom: 4,
@@ -603,8 +606,9 @@ export function renderGameShell(container) {
     meterFill.style.width = `${state.rainbowMeter}%`;
     meterTrack.setAttribute("aria-valuenow", String(state.rainbowMeter));
     critters.textContent = "Cat butt wiggle + dog butt wiggle";
-    spriteStage.classList.toggle("has-neon-collar", state.ownedItems.includes("neon-collar"));
-    spriteStage.classList.toggle("has-disco-sparkles", state.ownedItems.includes("disco-sparkles"));
+    SHOP_ITEMS.forEach((item) => {
+      spriteStage.classList.toggle(`has-${item.id}`, state.ownedItems.includes(item.id));
+    });
 
     SHOP_ITEMS.forEach((item, index) => {
       const owned = state.ownedItems.includes(item.id);

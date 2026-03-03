@@ -60,3 +60,11 @@ test("sanitizeTitle trims and limits text", () => {
   assert.equal(title.startsWith("This is a very long title for game night"), true);
   assert.ok(title.length <= 40);
 });
+
+test("BUY_ITEM does nothing when score is insufficient", () => {
+  const before = createInitialState({ score: 4, ownedItems: [] });
+  const after = applyAction(before, { type: "BUY_ITEM", itemId: "party-lasers", cost: 36 });
+
+  assert.equal(after.score, 4);
+  assert.deepEqual(after.ownedItems, []);
+});

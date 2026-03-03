@@ -85,3 +85,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: 3-combo taps felt too fast and less fun for current play style.
 - Decision: Replace combo rounds with a single-tap, music-synced incoming-note lane with visible upcoming beats.
 - Consequences: Simpler controls, better anticipation, and steadier rhythm gameplay.
+
+## D-013 - Expanded Shop Catalog
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Creative direction requested more variety in the shop.
+- Decision: Expand shop to five unlocks with escalating costs and distinct visual effects.
+- Consequences: Stronger long-term reward loop and more personalization for repeated sessions.
