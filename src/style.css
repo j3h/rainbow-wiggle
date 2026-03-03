@@ -79,11 +79,10 @@ body {
 }
 
 .lane-hud {
-  position: absolute;
-  right: 0;
-  top: -46px;
+  position: relative;
   display: inline-flex;
   align-items: center;
+  justify-self: end;
   gap: 0.45rem;
   padding: 0.32rem 0.42rem;
   border-radius: 13px;
@@ -171,7 +170,6 @@ body {
   gap: 0.45rem;
   --beat-progress: 0;
   position: relative;
-  padding-top: 0.9rem;
 }
 
 .beat-lane {

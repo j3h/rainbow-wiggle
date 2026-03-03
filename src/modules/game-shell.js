@@ -212,7 +212,7 @@ export function renderGameShell(container) {
   const beatZone = document.createElement("div");
   beatZone.className = "beat-zone";
   beatLane.append(meterTrack, hitFxLayer, beatTarget, beatZone, ...noteEls);
-  beatCue.append(laneHud, beatLane);
+  beatCue.append(beatLane, laneHud);
 
   const shop = document.createElement("section");
   shop.className = "shop";
