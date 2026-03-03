@@ -145,14 +145,24 @@ export function renderGameShell(container) {
   beatCue.className = "beat-cue";
   const beatBadge = document.createElement("p");
   beatBadge.className = "beat-badge";
+  const beatPips = document.createElement("div");
+  beatPips.className = "beat-pips";
+  const pipEls = Array.from({ length: COMBO_BEATS }, () => {
+    const pip = document.createElement("span");
+    pip.className = "beat-pip";
+    return pip;
+  });
+  beatPips.append(...pipEls);
   const beatLane = document.createElement("div");
   beatLane.className = "beat-lane";
   const beatTarget = document.createElement("div");
   beatTarget.className = "beat-target";
   const beatCursor = document.createElement("div");
   beatCursor.className = "beat-cursor";
-  beatLane.append(beatTarget, beatCursor);
-  beatCue.append(beatBadge, beatLane);
+  const beatZone = document.createElement("div");
+  beatZone.className = "beat-zone";
+  beatLane.append(beatTarget, beatZone, beatCursor);
+  beatCue.append(beatBadge, beatPips, beatLane);
 
   const shop = document.createElement("section");
   shop.className = "shop";
@@ -499,15 +509,15 @@ export function renderGameShell(container) {
     return "TAP NOW!";
   };
 
-  const getVisualCueText = (msUntilBeat) => {
-    if (msUntilBeat > 800) {
-      return "3";
+  const getVisualCueText = (msUntilBeat, totalMs) => {
+    if (msUntilBeat > totalMs * 0.66) {
+      return "Get Ready";
     }
-    if (msUntilBeat > 400) {
-      return "2";
+    if (msUntilBeat > totalMs * 0.33) {
+      return "Steady";
     }
     if (msUntilBeat > 120) {
-      return "1";
+      return "Almost";
     }
     if (msUntilBeat > -100) {
       return "TAP!";
@@ -570,6 +580,11 @@ export function renderGameShell(container) {
       beatCue.classList.remove("is-live");
       beatBadge.textContent = "READY";
       beatCursor.style.left = "0%";
+      beatCue.style.setProperty("--beat-progress", "0");
+      beatCue.classList.remove("is-window");
+      pipEls.forEach((pip) => {
+        pip.classList.remove("is-done", "is-current");
+      });
       if (!state.lastZone) {
         feedback.textContent = "Tap to start. Hit 3 beats in a row for combo bonuses.";
       } else if (lastShopMessage) {
@@ -587,9 +602,15 @@ export function renderGameShell(container) {
       feedback.textContent = `${getCountdownText(msUntilBeat)} Beat ${comboBeatIndex + 1}/${COMBO_BEATS}`;
       danceButton.classList.toggle("is-hot", msUntilBeat < 220);
       beatCue.classList.add("is-live");
-      beatBadge.textContent = getVisualCueText(msUntilBeat);
+      beatBadge.textContent = getVisualCueText(msUntilBeat, beatDurationMs);
       beatBadge.classList.toggle("is-hot", msUntilBeat < 220 && msUntilBeat > -120);
+      beatCue.classList.toggle("is-window", msUntilBeat < 220 && msUntilBeat > -140);
       beatCursor.style.left = `${Math.round(progress * 100)}%`;
+      beatCue.style.setProperty("--beat-progress", String(progress));
+      pipEls.forEach((pip, index) => {
+        pip.classList.toggle("is-done", index < comboBeatIndex);
+        pip.classList.toggle("is-current", index === comboBeatIndex);
+      });
     }
   };
 

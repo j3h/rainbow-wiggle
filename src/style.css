@@ -55,6 +55,7 @@ body {
   margin-top: 0.5rem;
   display: grid;
   gap: 0.45rem;
+  --beat-progress: 0;
 }
 
 .beat-badge {
@@ -75,32 +76,81 @@ body {
 
 .beat-lane {
   position: relative;
-  height: 16px;
+  height: 26px;
   border-radius: 999px;
   border: 2px solid #d7c8ac;
   background: linear-gradient(90deg, #ece5d6, #fdf8ec);
+  overflow: hidden;
 }
 
 .beat-target {
   position: absolute;
-  right: 4%;
-  top: -4px;
-  width: 4px;
-  height: 20px;
+  right: 10%;
+  top: 2px;
+  width: 6px;
+  height: 18px;
   border-radius: 999px;
   background: #ef6f3e;
+  z-index: 2;
+}
+
+.beat-zone {
+  position: absolute;
+  right: 7%;
+  top: 1px;
+  width: 14%;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(239, 111, 62, 0.14);
+  border: 1px dashed rgba(214, 82, 41, 0.5);
+  z-index: 1;
 }
 
 .beat-cursor {
   position: absolute;
   left: 0%;
-  top: -5px;
-  width: 14px;
+  top: 1px;
+  width: 22px;
   height: 22px;
-  margin-left: -7px;
+  margin-left: -11px;
   border-radius: 999px;
   background: linear-gradient(180deg, #2ea7ff, #2d68ff);
   box-shadow: 0 0 8px rgba(35, 93, 181, 0.45);
+  z-index: 3;
+}
+
+.beat-pips {
+  display: grid;
+  grid-template-columns: repeat(3, 16px);
+  gap: 0.45rem;
+}
+
+.beat-pip {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 2px solid #c8bba3;
+  background: #f0e8d8;
+}
+
+.beat-pip.is-current {
+  border-color: #2d68ff;
+  background: #7bb7ff;
+  box-shadow: 0 0 0 3px rgba(45, 104, 255, 0.16);
+}
+
+.beat-pip.is-done {
+  border-color: #ef6f3e;
+  background: #ffb082;
+}
+
+.beat-cue.is-window .beat-zone {
+  background: rgba(239, 111, 62, 0.24);
+  border-color: #ef6f3e;
+}
+
+.beat-cue.is-window .beat-cursor {
+  transform: scale(1.08);
 }
 
 .sprite-stage {
