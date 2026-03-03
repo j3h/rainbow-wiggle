@@ -1,0 +1,38 @@
+# Decision Log
+
+Use this file as append-only. Never rewrite old decisions; supersede them with new entries.
+
+## D-001 - Web-Only Delivery
+- Date: 2026-03-02
+- Status: Accepted
+- Context: iPad use is required and native install adds friction.
+- Decision: Ship as browser game (iPad Safari compatible), no iOS app packaging.
+- Consequences: Focus on responsive web UI, touch targets, and simple hosting.
+
+## D-002 - Reversible Delivery Model
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Prior project got stuck from broad changes with side effects.
+- Decision: Every change happens on a short-lived branch and is merged only after passing tests + demo check.
+- Consequences: More commits and PR overhead, but easier rollback and experimentation.
+
+## D-003 - Minimal-First Fun Loop
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Team wants "super fun" with less complexity.
+- Decision: Build one tiny mechanic at a time and test fun quickly with kids before expanding.
+- Consequences: Faster iteration, lower risk of architecture drift.
+
+## D-004 - Coherent Theme + 3-Zone Timing Mini-Game
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Creative direction requested cat/dog butt wiggle, disco feel, and a rainbow meter while preserving coherence.
+- Decision: Core loop is a dance timing mini-game with three judgment zones (Miss / Good / Perfect) that update a rainbow meter.
+- Consequences: Unique identity, simple controls for iPad, and a clear performance signal for one-minute play tests.
+
+## D-005 - Title Lock
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Creative directors selected a final title for this version.
+- Decision: Game title is `Butt Wiggle: Rainbow Version`.
+- Consequences: Keep this as default title unless future creative direction supersedes it.
