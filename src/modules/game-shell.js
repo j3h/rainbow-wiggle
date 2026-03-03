@@ -192,6 +192,13 @@ export function renderGameShell(container) {
   const controls = document.createElement("div");
   controls.className = "controls";
 
+  const shellBody = document.createElement("div");
+  shellBody.className = "shell-body";
+  const playPanel = document.createElement("section");
+  playPanel.className = "play-panel";
+  const sidePanel = document.createElement("aside");
+  sidePanel.className = "side-panel";
+
   const danceButton = document.createElement("button");
   danceButton.className = "action";
   danceButton.type = "button";
@@ -739,7 +746,10 @@ export function renderGameShell(container) {
   });
 
   controls.append(danceButton, musicButton);
-  shell.append(title, subtitle, stats, meterTrack, critters, spriteStage, beatCue, feedback, hype, controls, shop);
+  playPanel.append(meterTrack, critters, spriteStage, beatCue, feedback, hype, controls);
+  sidePanel.append(shop);
+  shellBody.append(playPanel, sidePanel);
+  shell.append(title, subtitle, stats, shellBody);
   applySpriteTune();
   updateMusicLabel();
   if (debugSprites) {
