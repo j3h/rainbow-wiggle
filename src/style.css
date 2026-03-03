@@ -209,6 +209,10 @@ body {
   box-shadow: 0 8px 20px rgba(61, 46, 21, 0.22);
 }
 
+.action-secondary {
+  background: linear-gradient(135deg, #2d8f9e, #46b4c3);
+}
+
 .action:active {
   transform: translateY(1px);
 }

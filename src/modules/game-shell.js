@@ -1,6 +1,12 @@
 import { applyAction, createInitialState } from "./interaction-state.js";
 import { getLayoutMode } from "./layout.js";
-import { playCountIn, playDiscoJingle } from "./disco-sfx.js";
+import {
+  isDiscoLoopActive,
+  playCountIn,
+  playDiscoJingle,
+  startDiscoLoop,
+  toggleDiscoLoop
+} from "./disco-sfx.js";
 import { judgeTiming } from "./timing.js";
 
 const PREP_MS = 1200;
@@ -120,6 +126,11 @@ export function renderGameShell(container) {
   danceButton.className = "action";
   danceButton.type = "button";
 
+  const musicButton = document.createElement("button");
+  musicButton.className = "action action-secondary";
+  musicButton.type = "button";
+  musicButton.textContent = "Music: Off";
+
   const applySpriteTune = () => {
     const sample = getFrameSample(spriteTune, 0);
     const frameAspect = (sample.sampleW / sample.sampleH) * spriteSheetAspect;
@@ -146,6 +157,7 @@ export function renderGameShell(container) {
 
   let wiggleTimeout = null;
   let frameTimer = null;
+  let musicStarted = false;
 
   const setFrame = (frameIndex) => {
     const sample = getFrameSample(spriteTune, frameIndex);
@@ -176,6 +188,10 @@ export function renderGameShell(container) {
       clearInterval(frameTimer);
       frameTimer = null;
     }
+  };
+
+  const updateMusicLabel = () => {
+    musicButton.textContent = isDiscoLoopActive() ? "Music: On" : "Music: Off";
   };
 
   const playWiggle = (zone) => {
@@ -484,6 +500,12 @@ export function renderGameShell(container) {
   };
 
   danceButton.addEventListener("click", () => {
+    if (!musicStarted) {
+      startDiscoLoop();
+      musicStarted = true;
+      updateMusicLabel();
+    }
+
     if (targetBeatAt === null) {
       targetBeatAt = performance.now() + PREP_MS;
       playCountIn(PREP_MS);
@@ -503,9 +525,16 @@ export function renderGameShell(container) {
     render();
   });
 
-  controls.append(danceButton);
+  musicButton.addEventListener("click", () => {
+    const active = toggleDiscoLoop();
+    musicStarted = musicStarted || active;
+    updateMusicLabel();
+  });
+
+  controls.append(danceButton, musicButton);
   shell.append(title, subtitle, stats, meterTrack, critters, spriteStage, feedback, controls);
   applySpriteTune();
+  updateMusicLabel();
   if (debugSprites) {
     shell.append(buildSpriteDebugPanel());
   }
