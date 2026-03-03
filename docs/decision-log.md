@@ -141,3 +141,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Level and meter are already visible in lane color and meter strip, so extra labels add clutter.
 - Decision: Replace top status text with a compact numeric score box (no "Points" label).
 - Consequences: Cleaner screen focus and faster readability during play.
+
+## D-021 - Floating Lane HUD Controls
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Pause/music controls should require minimal finger travel and stay visually lightweight.
+- Decision: Group score, play/pause toggle, and music toggle into a small floating HUD next to the rhythm lane; play/pause now acts as start/pause/resume from one control.
+- Consequences: Faster control access on touch devices and less layout noise in the main action area.

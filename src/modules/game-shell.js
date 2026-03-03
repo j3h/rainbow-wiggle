@@ -194,6 +194,8 @@ export function renderGameShell(container) {
 
   const beatCue = document.createElement("div");
   beatCue.className = "beat-cue";
+  const laneHud = document.createElement("div");
+  laneHud.className = "lane-hud";
   const beatLane = document.createElement("div");
   beatLane.className = "beat-lane";
   meterTrack.classList.add("lane-meter-track");
@@ -210,7 +212,7 @@ export function renderGameShell(container) {
   const beatZone = document.createElement("div");
   beatZone.className = "beat-zone";
   beatLane.append(meterTrack, hitFxLayer, beatTarget, beatZone, ...noteEls);
-  beatCue.append(beatLane);
+  beatCue.append(laneHud, beatLane);
 
   const shop = document.createElement("section");
   shop.className = "shop";
@@ -231,7 +233,7 @@ export function renderGameShell(container) {
   sidePanel.className = "side-panel";
 
   const musicButton = document.createElement("button");
-  musicButton.className = "music-toggle";
+  musicButton.className = "music-toggle hud-toggle";
   musicButton.type = "button";
   musicButton.textContent = "♪";
 
@@ -240,10 +242,11 @@ export function renderGameShell(container) {
   playAgainButton.type = "button";
   playAgainButton.textContent = "Play Again";
 
-  const pauseButton = document.createElement("button");
-  pauseButton.className = "action action-secondary action-pause";
-  pauseButton.type = "button";
-  pauseButton.textContent = "Pause";
+  const playPauseButton = document.createElement("button");
+  playPauseButton.className = "play-toggle hud-toggle";
+  playPauseButton.type = "button";
+  playPauseButton.textContent = "▶";
+  playPauseButton.setAttribute("aria-label", "Start round");
 
   beatLane.setAttribute("role", "button");
   beatLane.setAttribute("tabindex", "0");
@@ -324,6 +327,53 @@ export function renderGameShell(container) {
     musicButton.setAttribute("aria-pressed", String(active));
     musicButton.setAttribute("aria-label", active ? "Turn music off" : "Turn music on");
     musicButton.title = active ? "Music on" : "Music off";
+  };
+
+  const updatePlayPauseLabel = () => {
+    if (state.hasWon) {
+      playPauseButton.textContent = "▶";
+      playPauseButton.setAttribute("aria-label", "Round complete. Tap Play Again.");
+      playPauseButton.title = "Round complete";
+      playPauseButton.disabled = true;
+      return;
+    }
+
+    if (nextBeatAt !== null && !isPaused) {
+      playPauseButton.textContent = "⏸";
+      playPauseButton.setAttribute("aria-label", "Pause round");
+      playPauseButton.title = "Pause";
+      playPauseButton.disabled = false;
+      return;
+    }
+
+    playPauseButton.textContent = "▶";
+    playPauseButton.setAttribute("aria-label", nextBeatAt === null ? "Start round" : "Resume round");
+    playPauseButton.title = nextBeatAt === null ? "Start" : "Resume";
+    playPauseButton.disabled = false;
+  };
+
+  const startRound = () => {
+    if (!musicStarted) {
+      startDiscoLoop();
+      musicStarted = true;
+      updateMusicLabel();
+    }
+
+    if (nextBeatAt !== null) {
+      return;
+    }
+    beatPatternIndex = 0;
+    const firstBeatsAhead = getPatternValue(beatPatternIndex);
+    const firstBeat = getNextAlignedBeatPerfTime(firstBeatsAhead);
+    if (firstBeat) {
+      nextBeatAt = firstBeat;
+      beatDurationMs = Math.max(500, getBeatDurationMs() * firstBeatsAhead);
+    } else {
+      beatDurationMs = Math.max(PREP_MS, getBeatDurationMs() * firstBeatsAhead);
+      nextBeatAt = performance.now() + beatDurationMs;
+    }
+    startCountdownRender();
+    render();
   };
 
   const launchWinCelebration = () => {
@@ -744,8 +794,7 @@ export function renderGameShell(container) {
         });
         playAgainButton.classList.toggle("is-visible", state.hasWon);
         playAgainButton.disabled = !state.hasWon;
-        pauseButton.textContent = "Resume";
-        pauseButton.disabled = false;
+        updatePlayPauseLabel();
         return;
       }
 
@@ -783,8 +832,7 @@ export function renderGameShell(container) {
 
     playAgainButton.classList.toggle("is-visible", state.hasWon);
     playAgainButton.disabled = !state.hasWon;
-    pauseButton.textContent = isPaused ? "Resume" : "Pause";
-    pauseButton.disabled = nextBeatAt === null && !isPaused;
+    updatePlayPauseLabel();
   };
 
   const handleLaneTap = () => {
@@ -792,25 +840,8 @@ export function renderGameShell(container) {
       return;
     }
 
-    if (!musicStarted) {
-      startDiscoLoop();
-      musicStarted = true;
-      updateMusicLabel();
-    }
-
     if (nextBeatAt === null) {
-      beatPatternIndex = 0;
-      const firstBeatsAhead = getPatternValue(beatPatternIndex);
-      const firstBeat = getNextAlignedBeatPerfTime(firstBeatsAhead);
-      if (firstBeat) {
-        nextBeatAt = firstBeat;
-        beatDurationMs = Math.max(500, getBeatDurationMs() * firstBeatsAhead);
-      } else {
-        beatDurationMs = Math.max(PREP_MS, getBeatDurationMs() * firstBeatsAhead);
-        nextBeatAt = performance.now() + beatDurationMs;
-      }
-      startCountdownRender();
-      render();
+      startRound();
       return;
     }
 
@@ -880,6 +911,14 @@ export function renderGameShell(container) {
     render();
   };
 
+  const handlePlayPauseToggle = () => {
+    if (nextBeatAt === null && !isPaused) {
+      startRound();
+      return;
+    }
+    handlePauseToggle();
+  };
+
   beatLane.addEventListener("click", handleLaneTap);
   beatLane.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {
@@ -911,7 +950,7 @@ export function renderGameShell(container) {
     render();
   });
 
-  pauseButton.addEventListener("click", handlePauseToggle);
+  playPauseButton.addEventListener("click", handlePlayPauseToggle);
 
   shopButtons.forEach((button, index) => {
     const item = SHOP_ITEMS[index];
@@ -930,12 +969,12 @@ export function renderGameShell(container) {
     });
   });
 
-  controls.append(pauseButton, playAgainButton);
-  playPanel.append(musicButton);
+  laneHud.append(stats, playPauseButton, musicButton);
+  controls.append(playAgainButton);
   playPanel.append(spriteStage, beatCue, feedback, hype, controls);
   sidePanel.append(shop);
   shellBody.append(playPanel, sidePanel);
-  shell.append(title, subtitle, stats, shellBody);
+  shell.append(title, subtitle, shellBody);
   applySpriteTune();
   updateMusicLabel();
   if (debugSprites) {
