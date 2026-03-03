@@ -597,22 +597,6 @@ export function renderGameShell(container) {
     return "TAP NOW!";
   };
 
-  const getVisualCueText = (msUntilBeat, totalMs) => {
-    if (msUntilBeat > totalMs * 0.66) {
-      return "Get Ready";
-    }
-    if (msUntilBeat > totalMs * 0.33) {
-      return "Steady";
-    }
-    if (msUntilBeat > 120) {
-      return "Almost";
-    }
-    if (msUntilBeat > -100) {
-      return "TAP!";
-    }
-    return "LATE";
-  };
-
   const stopCountdownRender = () => {
     if (countdownRaf !== null) {
       cancelAnimationFrame(countdownRaf);
@@ -684,7 +668,7 @@ export function renderGameShell(container) {
     if (nextBeatAt === null) {
       beatLane.classList.remove("is-hot");
       beatCue.classList.remove("is-live");
-      beatBadge.textContent = "READY";
+      beatBadge.textContent = "RHYTHM LANE";
       beatCue.style.setProperty("--beat-progress", "0");
       beatCue.classList.remove("is-window");
       pipEls[0].classList.remove("is-done");
@@ -709,8 +693,8 @@ export function renderGameShell(container) {
       feedback.textContent = `${getCountdownText(msUntilBeat)} Keep the rhythm!`;
       beatLane.classList.toggle("is-hot", msUntilBeat < 220 && msUntilBeat > -140);
       beatCue.classList.add("is-live");
-      beatBadge.textContent = getVisualCueText(msUntilBeat, beatDurationMs);
-      beatBadge.classList.toggle("is-hot", msUntilBeat < 220 && msUntilBeat > -120);
+      beatBadge.textContent = "RHYTHM LANE";
+      beatBadge.classList.toggle("is-hot", false);
       beatCue.classList.toggle("is-window", msUntilBeat < 220 && msUntilBeat > -140);
       beatCue.style.setProperty("--beat-progress", String(progress));
 
