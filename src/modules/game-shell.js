@@ -1,5 +1,6 @@
 import { applyAction, createInitialState } from "./interaction-state.js";
 import { getLayoutMode } from "./layout.js";
+import { getEnergyLevel, getHypeText } from "./fun-mode.js";
 import {
   isDiscoLoopActive,
   playDiscoJingle,
@@ -92,7 +93,9 @@ export function renderGameShell(container) {
   let beatDurationMs = PREP_MS;
   let comboBeatIndex = 0;
   let comboZones = [];
+  let comboStreak = 0;
   let lastComboFeedback = "";
+  let hypeText = "Ready to wiggle";
   let lastShopMessage = "";
   let countdownRaf = null;
   let spriteSheetAspect = FALLBACK_SHEET_ASPECT;
@@ -127,6 +130,8 @@ export function renderGameShell(container) {
 
   const spriteStage = document.createElement("div");
   spriteStage.className = "sprite-stage";
+  const burstLayer = document.createElement("div");
+  burstLayer.className = "burst-layer";
 
   const catSprite = document.createElement("div");
   catSprite.className = "sprite sprite-cat";
@@ -136,10 +141,12 @@ export function renderGameShell(container) {
   dogSprite.className = "sprite sprite-dog";
   dogSprite.setAttribute("aria-label", "Dog butt wiggle");
 
-  spriteStage.append(catSprite, dogSprite);
+  spriteStage.append(catSprite, dogSprite, burstLayer);
 
   const feedback = document.createElement("p");
   feedback.className = "feedback";
+  const hype = document.createElement("p");
+  hype.className = "hype";
 
   const beatCue = document.createElement("div");
   beatCue.className = "beat-cue";
@@ -255,6 +262,23 @@ export function renderGameShell(container) {
 
   const updateMusicLabel = () => {
     musicButton.textContent = isDiscoLoopActive() ? "Music: On" : "Music: Off";
+  };
+
+  const launchBurst = (zone) => {
+    if (zone === "miss") {
+      return;
+    }
+    const count = zone === "perfect" ? 8 : 5;
+    for (let index = 0; index < count; index += 1) {
+      const puff = document.createElement("span");
+      puff.className = `burst burst-${zone}`;
+      puff.style.left = `${12 + Math.random() * 76}%`;
+      puff.style.top = `${20 + Math.random() * 55}%`;
+      puff.style.setProperty("--drift-x", `${-18 + Math.random() * 36}px`);
+      puff.style.setProperty("--drift-y", `${-14 - Math.random() * 20}px`);
+      burstLayer.append(puff);
+      setTimeout(() => puff.remove(), 550);
+    }
   };
 
   const playWiggle = (zone) => {
@@ -557,6 +581,7 @@ export function renderGameShell(container) {
 
   const render = () => {
     title.textContent = state.title;
+    shell.dataset.energy = String(getEnergyLevel(state.rainbowMeter));
     stats.textContent = `Round ${state.round} | Dance Points ${state.score} | ${state.rainbowLevel}`;
     meterFill.style.width = `${state.rainbowMeter}%`;
     meterTrack.setAttribute("aria-valuenow", String(state.rainbowMeter));
@@ -594,6 +619,7 @@ export function renderGameShell(container) {
       } else {
         feedback.textContent = buildFeedback(state.lastZone);
       }
+      hype.textContent = hypeText;
     } else {
       danceButton.textContent = `HIT BEAT ${comboBeatIndex + 1}/${COMBO_BEATS}`;
       const msUntilBeat = nextBeatAt - performance.now();
@@ -611,6 +637,7 @@ export function renderGameShell(container) {
         pip.classList.toggle("is-done", index < comboBeatIndex);
         pip.classList.toggle("is-current", index === comboBeatIndex);
       });
+      hype.textContent = `Beat ${comboBeatIndex + 1}: Align cursor to target!`;
     }
   };
 
@@ -637,6 +664,7 @@ export function renderGameShell(container) {
     comboZones.push(zone);
     playDiscoJingle(zone);
     playWiggle(zone);
+    launchBurst(zone);
 
     if (comboBeatIndex < COMBO_BEATS - 1) {
       comboBeatIndex += 1;
@@ -648,6 +676,8 @@ export function renderGameShell(container) {
     }
 
     state = applyAction(state, { type: "APPLY_COMBO", zones: comboZones });
+    comboStreak = state.lastZone === "miss" ? 0 : comboStreak + 1;
+    hypeText = getHypeText(state.lastZone, comboStreak);
     lastComboFeedback = buildComboFeedback(comboZones, state.lastZone);
     lastShopMessage = "";
     comboBeatIndex = 0;
@@ -682,7 +712,7 @@ export function renderGameShell(container) {
   });
 
   controls.append(danceButton, musicButton);
-  shell.append(title, subtitle, stats, meterTrack, critters, spriteStage, beatCue, feedback, controls, shop);
+  shell.append(title, subtitle, stats, meterTrack, critters, spriteStage, beatCue, feedback, hype, controls, shop);
   applySpriteTune();
   updateMusicLabel();
   if (debugSprites) {

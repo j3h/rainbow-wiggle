@@ -57,3 +57,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Audio count-in was hard to hear reliably during play sessions.
 - Decision: Primary timing cue is now visual (`3-2-1-TAP` badge + moving beat cursor lane).
 - Consequences: Timing remains playable even with low volume or noisy environment.
+
+## D-009 - Party Mode Feedback
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Experience needed stronger excitement and clearer reward feeling.
+- Decision: Add hype text, burst effects on successful beats, and shell energy visuals tied to rainbow progression.
+- Consequences: More readable fun feedback without changing core controls.
