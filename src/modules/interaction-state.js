@@ -1,7 +1,28 @@
 const DEFAULT_TITLE = "Butt Wiggle: Rainbow Version";
+const ZONE_EFFECTS = {
+  miss: { score: 0, meter: -4 },
+  good: { score: 2, meter: 12 },
+  perfect: { score: 3, meter: 20 }
+};
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
+}
+
+export function getRainbowLevel(rainbowMeter) {
+  if (rainbowMeter >= 100) {
+    return "Cosmic Rainbow";
+  }
+  if (rainbowMeter >= 75) {
+    return "Mega Rainbow";
+  }
+  if (rainbowMeter >= 50) {
+    return "Vibrant Rainbow";
+  }
+  if (rainbowMeter >= 25) {
+    return "Shimmer Rainbow";
+  }
+  return "Tiny Rainbow";
 }
 
 export function sanitizeTitle(value) {
@@ -18,14 +39,19 @@ export function sanitizeTitle(value) {
 }
 
 export function createInitialState(overrides = {}) {
+  const rainbowMeter = Number.isInteger(overrides.rainbowMeter)
+    ? clamp(overrides.rainbowMeter, 0, 100)
+    : 0;
   return {
     title: sanitizeTitle(overrides.title ?? DEFAULT_TITLE),
     round: Number.isInteger(overrides.round) && overrides.round > 0 ? overrides.round : 1,
     score: Number.isInteger(overrides.score) && overrides.score >= 0 ? overrides.score : 0,
-    rainbowMeter: Number.isInteger(overrides.rainbowMeter)
-      ? clamp(overrides.rainbowMeter, 0, 100)
-      : 0,
-    lastZone: ["miss", "good", "perfect"].includes(overrides.lastZone) ? overrides.lastZone : null
+    rainbowMeter,
+    rainbowLevel: getRainbowLevel(rainbowMeter),
+    lastZone: ["miss", "good", "perfect"].includes(overrides.lastZone) ? overrides.lastZone : null,
+    ownedItems: Array.isArray(overrides.ownedItems)
+      ? overrides.ownedItems.filter((item) => typeof item === "string")
+      : []
   };
 }
 
@@ -41,21 +67,82 @@ export function applyAction(state, action) {
   switch (action.type) {
     case "APPLY_JUDGMENT": {
       const zone = ["miss", "good", "perfect"].includes(action.zone) ? action.zone : "miss";
-      const effects = {
-        miss: { score: 0, meter: -4 },
-        good: { score: 2, meter: 12 },
-        perfect: { score: 3, meter: 20 }
-      };
-
-      const nextScore = state.score + effects[zone].score;
-      const nextMeter = clamp(state.rainbowMeter + effects[zone].meter, 0, 100);
+      const nextScore = state.score + ZONE_EFFECTS[zone].score;
+      const nextMeter = clamp(state.rainbowMeter + ZONE_EFFECTS[zone].meter, 0, 100);
 
       return {
         ...state,
         round: state.round + 1,
         score: nextScore,
         rainbowMeter: nextMeter,
+        rainbowLevel: getRainbowLevel(nextMeter),
         lastZone: zone
+      };
+    }
+    case "APPLY_COMBO": {
+      const zones = Array.isArray(action.zones) ? action.zones : [];
+      const safeZones = zones
+        .map((zone) => (["miss", "good", "perfect"].includes(zone) ? zone : "miss"))
+        .slice(0, 8);
+      if (safeZones.length === 0) {
+        return state;
+      }
+
+      const perfectCount = safeZones.filter((zone) => zone === "perfect").length;
+      const goodCount = safeZones.filter((zone) => zone === "good").length;
+      const missCount = safeZones.length - perfectCount - goodCount;
+
+      const base = safeZones.reduce(
+        (acc, zone) => ({
+          score: acc.score + ZONE_EFFECTS[zone].score,
+          meter: acc.meter + ZONE_EFFECTS[zone].meter
+        }),
+        { score: 0, meter: 0 }
+      );
+
+      let bonusScore = 0;
+      let bonusMeter = 0;
+      let comboRank = "miss";
+
+      if (perfectCount === safeZones.length) {
+        bonusScore = 8;
+        bonusMeter = 16;
+        comboRank = "perfect";
+      } else if (perfectCount >= 2) {
+        bonusScore = 4;
+        bonusMeter = 10;
+        comboRank = "good";
+      } else if (goodCount >= 2) {
+        bonusScore = 2;
+        bonusMeter = 6;
+        comboRank = "good";
+      } else if (missCount === safeZones.length) {
+        bonusMeter = -8;
+        comboRank = "miss";
+      } else {
+        comboRank = goodCount > 0 || perfectCount > 0 ? "good" : "miss";
+      }
+
+      return {
+        ...state,
+        round: state.round + 1,
+        score: state.score + base.score + bonusScore,
+        rainbowMeter: clamp(state.rainbowMeter + base.meter + bonusMeter, 0, 100),
+        rainbowLevel: getRainbowLevel(clamp(state.rainbowMeter + base.meter + bonusMeter, 0, 100)),
+        lastZone: comboRank
+      };
+    }
+    case "BUY_ITEM": {
+      const itemId = typeof action.itemId === "string" ? action.itemId : "";
+      const cost = Number.isInteger(action.cost) && action.cost > 0 ? action.cost : 0;
+      if (!itemId || cost <= 0 || state.score < cost || state.ownedItems.includes(itemId)) {
+        return state;
+      }
+
+      return {
+        ...state,
+        score: state.score - cost,
+        ownedItems: [...state.ownedItems, itemId]
       };
     }
     case "SET_TITLE":

@@ -10,11 +10,17 @@ import {
 import { judgeTiming } from "./timing.js";
 
 const PREP_MS = 1200;
+const COMBO_BEATS = 3;
+const BEAT_GAP_MS = 520;
 const WIGGLE_MS = 850;
 const SPRITE_SHEET_SRC = "/src/assets/sprites/cat-dog-butt-wiggle-base.png";
 const FALLBACK_SHEET_ASPECT = 1536 / 1024;
 const FRAME_INSET_X_PCT = 0.5;
 const FRAME_INSET_Y_PCT = 0.5;
+const SHOP_ITEMS = [
+  { id: "neon-collar", name: "Neon Collar", cost: 12, effect: "Neon glow aura" },
+  { id: "disco-sparkles", name: "Disco Sparkles", cost: 20, effect: "Sparkle burst around dancers" }
+];
 const DEFAULT_SPRITE_TUNE = {
   zoom: 4,
   catX: 22,
@@ -65,13 +71,28 @@ function buildFeedback(zone) {
   return byZone[zone] || byZone.miss;
 }
 
+function buildComboFeedback(zones, rank) {
+  const joined = zones.map((zone) => zone.toUpperCase()).join(" / ");
+  if (rank === "perfect") {
+    return `Combo ${joined}. DISCO BLAST combo bonus!`;
+  }
+  if (rank === "good") {
+    return `Combo ${joined}. Nice groove chain!`;
+  }
+  return `Combo ${joined}. Try tighter rhythm next round.`;
+}
+
 export function renderGameShell(container) {
   if (!container) {
     throw new Error("container is required");
   }
 
   let state = createInitialState();
-  let targetBeatAt = null;
+  let nextBeatAt = null;
+  let comboBeatIndex = 0;
+  let comboZones = [];
+  let lastComboFeedback = "";
+  let lastShopMessage = "";
   let countdownRaf = null;
   let spriteSheetAspect = FALLBACK_SHEET_ASPECT;
   const params = new URLSearchParams(window.location.search);
@@ -119,6 +140,14 @@ export function renderGameShell(container) {
   const feedback = document.createElement("p");
   feedback.className = "feedback";
 
+  const shop = document.createElement("section");
+  shop.className = "shop";
+  const shopTitle = document.createElement("h2");
+  shopTitle.className = "shop-title";
+  shopTitle.textContent = "Rainbow Shop";
+  const shopList = document.createElement("div");
+  shopList.className = "shop-list";
+
   const controls = document.createElement("div");
   controls.className = "controls";
 
@@ -130,6 +159,16 @@ export function renderGameShell(container) {
   musicButton.className = "action action-secondary";
   musicButton.type = "button";
   musicButton.textContent = "Music: Off";
+
+  const shopButtons = SHOP_ITEMS.map((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "shop-item";
+    button.dataset.itemId = item.id;
+    return button;
+  });
+  shopList.append(...shopButtons);
+  shop.append(shopTitle, shopList);
 
   const applySpriteTune = () => {
     const sample = getFrameSample(spriteTune, 0);
@@ -459,7 +498,7 @@ export function renderGameShell(container) {
     }
 
     const tick = () => {
-      if (targetBeatAt === null) {
+      if (nextBeatAt === null) {
         countdownRaf = null;
         return;
       }
@@ -478,23 +517,39 @@ export function renderGameShell(container) {
 
   const render = () => {
     title.textContent = state.title;
-    stats.textContent = `Round ${state.round} | Dance Points ${state.score} | ${state.lastZone ?? "Ready"}`;
+    stats.textContent = `Round ${state.round} | Dance Points ${state.score} | ${state.rainbowLevel}`;
     meterFill.style.width = `${state.rainbowMeter}%`;
     meterTrack.setAttribute("aria-valuenow", String(state.rainbowMeter));
     critters.textContent = "Cat butt wiggle + dog butt wiggle";
+    spriteStage.classList.toggle("has-neon-collar", state.ownedItems.includes("neon-collar"));
+    spriteStage.classList.toggle("has-disco-sparkles", state.ownedItems.includes("disco-sparkles"));
 
-    if (targetBeatAt === null) {
-      danceButton.textContent = "Start Dance Party";
+    SHOP_ITEMS.forEach((item, index) => {
+      const owned = state.ownedItems.includes(item.id);
+      const affordable = state.score >= item.cost;
+      const button = shopButtons[index];
+      button.disabled = owned;
+      button.textContent = owned
+        ? `${item.name} - Owned`
+        : `${item.name} (${item.cost}) - ${item.effect}${affordable ? "" : " (Need points)"}`;
+    });
+
+    if (nextBeatAt === null) {
+      danceButton.textContent = "Start 3-Beat Dance Combo";
       danceButton.classList.remove("is-hot");
       if (!state.lastZone) {
-        feedback.textContent = "Tap to start. Then tap again when the beat lands.";
+        feedback.textContent = "Tap to start. Hit 3 beats in a row for combo bonuses.";
+      } else if (lastShopMessage) {
+        feedback.textContent = lastShopMessage;
+      } else if (lastComboFeedback) {
+        feedback.textContent = lastComboFeedback;
       } else {
         feedback.textContent = buildFeedback(state.lastZone);
       }
     } else {
-      danceButton.textContent = "HIT THE BEAT";
-      const msUntilBeat = targetBeatAt - performance.now();
-      feedback.textContent = `${getCountdownText(msUntilBeat)}  Miss / Good / Perfect`;
+      danceButton.textContent = `HIT BEAT ${comboBeatIndex + 1}/${COMBO_BEATS}`;
+      const msUntilBeat = nextBeatAt - performance.now();
+      feedback.textContent = `${getCountdownText(msUntilBeat)} Beat ${comboBeatIndex + 1}/${COMBO_BEATS}`;
       danceButton.classList.toggle("is-hot", msUntilBeat < 220);
     }
   };
@@ -506,22 +561,36 @@ export function renderGameShell(container) {
       updateMusicLabel();
     }
 
-    if (targetBeatAt === null) {
-      targetBeatAt = performance.now() + PREP_MS;
+    if (nextBeatAt === null) {
+      comboBeatIndex = 0;
+      comboZones = [];
+      nextBeatAt = performance.now() + PREP_MS;
       playCountIn(PREP_MS);
       startCountdownRender();
       render();
       return;
     }
 
-    const deltaMs = performance.now() - targetBeatAt;
+    const deltaMs = performance.now() - nextBeatAt;
     const zone = judgeTiming(deltaMs);
-
-    state = applyAction(state, { type: "APPLY_JUDGMENT", zone });
-    targetBeatAt = null;
-    stopCountdownRender();
-    playWiggle(zone);
+    comboZones.push(zone);
     playDiscoJingle(zone);
+    playWiggle(zone);
+
+    if (comboBeatIndex < COMBO_BEATS - 1) {
+      comboBeatIndex += 1;
+      nextBeatAt += BEAT_GAP_MS;
+      render();
+      return;
+    }
+
+    state = applyAction(state, { type: "APPLY_COMBO", zones: comboZones });
+    lastComboFeedback = buildComboFeedback(comboZones, state.lastZone);
+    lastShopMessage = "";
+    comboBeatIndex = 0;
+    comboZones = [];
+    nextBeatAt = null;
+    stopCountdownRender();
     render();
   });
 
@@ -531,8 +600,25 @@ export function renderGameShell(container) {
     updateMusicLabel();
   });
 
+  shopButtons.forEach((button, index) => {
+    const item = SHOP_ITEMS[index];
+    button.addEventListener("click", () => {
+      const beforeScore = state.score;
+      const beforeOwned = state.ownedItems.length;
+      state = applyAction(state, { type: "BUY_ITEM", itemId: item.id, cost: item.cost });
+      if (state.ownedItems.length > beforeOwned) {
+        lastShopMessage = `Shop: ${item.name} unlocked!`;
+      } else if (beforeScore < item.cost) {
+        lastShopMessage = `Shop: Need ${item.cost - beforeScore} more dance points for ${item.name}.`;
+      } else {
+        lastShopMessage = `Shop: ${item.name} already owned.`;
+      }
+      render();
+    });
+  });
+
   controls.append(danceButton, musicButton);
-  shell.append(title, subtitle, stats, meterTrack, critters, spriteStage, feedback, controls);
+  shell.append(title, subtitle, stats, meterTrack, critters, spriteStage, feedback, controls, shop);
   applySpriteTune();
   updateMusicLabel();
   if (debugSprites) {

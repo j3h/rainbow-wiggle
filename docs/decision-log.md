@@ -36,3 +36,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Creative directors selected a final title for this version.
 - Decision: Game title is `Butt Wiggle: Rainbow Version`.
 - Consequences: Keep this as default title unless future creative direction supersedes it.
+
+## D-006 - 3-Beat Combo Core Loop
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Single-tap timing was fun but too shallow.
+- Decision: Core action is now a 3-beat combo round with per-beat judgments and combo bonuses.
+- Consequences: Higher engagement per round while preserving touch simplicity on iPad.
