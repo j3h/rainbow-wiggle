@@ -207,8 +207,9 @@ body {
   height: 22px;
   margin-left: -11px;
   border-radius: 999px;
-  background: linear-gradient(180deg, #2ea7ff, #2d68ff);
-  box-shadow: 0 0 8px rgba(35, 93, 181, 0.45);
+  background: linear-gradient(180deg, #f7fbff, #4fa0ff 45%, #1b58d6);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 10px rgba(16, 68, 169, 0.52);
   z-index: 3;
 }
 
@@ -264,6 +265,41 @@ body {
 
 .beat-cue.is-window .beat-cursor {
   transform: scale(1.08);
+}
+
+.shell[data-level="violet"] .beat-lane {
+  border-color: #8e77cf;
+  background: linear-gradient(90deg, #5e4a9f, #8b6fd0);
+}
+
+.shell[data-level="indigo"] .beat-lane {
+  border-color: #6d88e4;
+  background: linear-gradient(90deg, #3f4ea3, #657bde);
+}
+
+.shell[data-level="blue"] .beat-lane {
+  border-color: #5caedc;
+  background: linear-gradient(90deg, #2f73b6, #4da6ea);
+}
+
+.shell[data-level="green"] .beat-lane {
+  border-color: #5caf74;
+  background: linear-gradient(90deg, #327f4a, #4fb46e);
+}
+
+.shell[data-level="yellow"] .beat-lane {
+  border-color: #dcb353;
+  background: linear-gradient(90deg, #b78e22, #ebc147);
+}
+
+.shell[data-level="orange"] .beat-lane {
+  border-color: #dc9558;
+  background: linear-gradient(90deg, #ca722e, #ef9745);
+}
+
+.shell[data-level="red"] .beat-lane {
+  border-color: #d36666;
+  background: linear-gradient(90deg, #bb3d4f, #ea5d62);
 }
 
 .sprite-stage {
