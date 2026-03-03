@@ -106,3 +106,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Creative direction requested more shop content and a stronger win moment.
 - Decision: Add `Disco Ball` shop unlock and trigger spotlight + rainbow confetti effects on final Red-level win.
 - Consequences: Clearer celebration payoff and richer visual progression loop.
+
+## D-016 - Explosive Hit Feedback
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Creative direction requested a more exciting reward cue on successful taps.
+- Decision: Add a lane-centered hit explosion effect (flash + ring + spark particles) for `good` and `perfect` taps, while keeping misses quiet.
+- Consequences: Stronger moment-to-moment impact without changing rhythm timing rules or controls.

@@ -116,6 +116,72 @@ body {
   touch-action: manipulation;
 }
 
+.hit-fx-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.hit-explosion,
+.hit-ring,
+.hit-spark {
+  position: absolute;
+  pointer-events: none;
+}
+
+.hit-explosion {
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  margin-top: -9px;
+  border-radius: 999px;
+  animation: hitExplosion 0.48s ease-out forwards;
+}
+
+.hit-explosion-good {
+  background: radial-gradient(circle, rgba(255, 255, 220, 0.98) 0 25%, rgba(255, 199, 110, 0.94) 48%, rgba(255, 140, 66, 0.66) 78%, transparent 100%);
+  box-shadow: 0 0 20px rgba(255, 163, 79, 0.86);
+}
+
+.hit-explosion-perfect {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.98) 0 18%, rgba(145, 236, 255, 0.96) 44%, rgba(214, 133, 255, 0.86) 72%, transparent 100%);
+  box-shadow: 0 0 24px rgba(129, 223, 255, 0.92), 0 0 34px rgba(216, 129, 255, 0.68);
+}
+
+.hit-ring {
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  margin-top: -8px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 239, 182, 0.95);
+  animation: hitRing 0.56s ease-out forwards;
+}
+
+.hit-ring-perfect {
+  border-color: rgba(184, 243, 255, 0.98);
+}
+
+.hit-spark {
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  margin-top: -3px;
+  border-radius: 999px;
+  animation: hitSpark 0.5s ease-out forwards;
+}
+
+.hit-spark-good {
+  background: linear-gradient(180deg, rgba(255, 250, 202, 0.98), rgba(255, 166, 90, 0.9));
+  box-shadow: 0 0 8px rgba(255, 174, 92, 0.72);
+}
+
+.hit-spark-perfect {
+  background: linear-gradient(180deg, rgba(237, 255, 255, 1), rgba(122, 225, 255, 0.94));
+  box-shadow: 0 0 10px rgba(123, 225, 255, 0.84), 0 0 14px rgba(217, 147, 255, 0.62);
+}
+
 .beat-lane.is-hot {
   box-shadow: 0 0 0 3px rgba(239, 111, 62, 0.25), 0 0 16px rgba(239, 111, 62, 0.38);
 }
@@ -813,11 +879,11 @@ body {
 
 .burst {
   position: absolute;
-  width: 12px;
-  height: 12px;
+  width: var(--burst-size, 12px);
+  height: var(--burst-size, 12px);
   border-radius: 999px;
   opacity: 0.95;
-  animation: burstPop 0.56s ease-out forwards;
+  animation: burstPop 0.64s ease-out forwards;
 }
 
 .burst-good {
@@ -835,6 +901,39 @@ body {
   }
   to {
     transform: translate(var(--drift-x), var(--drift-y)) scale(1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes hitExplosion {
+  from {
+    transform: scale(0.2);
+    opacity: 1;
+  }
+  to {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+@keyframes hitRing {
+  from {
+    transform: scale(0.55);
+    opacity: 0.96;
+  }
+  to {
+    transform: scale(4.5);
+    opacity: 0;
+  }
+}
+
+@keyframes hitSpark {
+  from {
+    transform: translate(0, 0) scale(1.1);
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--drift-x), var(--drift-y)) scale(0.35);
     opacity: 0;
   }
 }

@@ -206,6 +206,8 @@ export function renderGameShell(container) {
   beatPips.append(...pipEls);
   const beatLane = document.createElement("div");
   beatLane.className = "beat-lane";
+  const hitFxLayer = document.createElement("div");
+  hitFxLayer.className = "hit-fx-layer";
   const beatTarget = document.createElement("div");
   beatTarget.className = "beat-target";
   const noteEls = Array.from({ length: NOTE_PREVIEW_COUNT }, () => {
@@ -215,7 +217,7 @@ export function renderGameShell(container) {
   });
   const beatZone = document.createElement("div");
   beatZone.className = "beat-zone";
-  beatLane.append(beatTarget, beatZone, ...noteEls);
+  beatLane.append(hitFxLayer, beatTarget, beatZone, ...noteEls);
   beatCue.append(beatBadge, beatPips, beatLane);
 
   const shop = document.createElement("section");
@@ -341,16 +343,46 @@ export function renderGameShell(container) {
     if (zone === "miss") {
       return;
     }
-    const count = zone === "perfect" ? 8 : 5;
+    const count = zone === "perfect" ? 14 : 9;
+    const targetX = LANE_TARGET_PCT;
+    const targetY = 50;
+
+    const core = document.createElement("span");
+    core.className = `hit-explosion hit-explosion-${zone}`;
+    core.style.left = `${targetX}%`;
+    core.style.top = `${targetY}%`;
+    hitFxLayer.append(core);
+    setTimeout(() => core.remove(), 520);
+
+    const ring = document.createElement("span");
+    ring.className = `hit-ring hit-ring-${zone}`;
+    ring.style.left = `${targetX}%`;
+    ring.style.top = `${targetY}%`;
+    hitFxLayer.append(ring);
+    setTimeout(() => ring.remove(), 560);
+
+    const sparkCount = zone === "perfect" ? 18 : 12;
+    for (let index = 0; index < sparkCount; index += 1) {
+      const spark = document.createElement("span");
+      spark.className = `hit-spark hit-spark-${zone}`;
+      spark.style.left = `${targetX}%`;
+      spark.style.top = `${targetY}%`;
+      spark.style.setProperty("--drift-x", `${-44 + Math.random() * 88}px`);
+      spark.style.setProperty("--drift-y", `${-30 + Math.random() * 60}px`);
+      hitFxLayer.append(spark);
+      setTimeout(() => spark.remove(), 520);
+    }
+
     for (let index = 0; index < count; index += 1) {
       const puff = document.createElement("span");
       puff.className = `burst burst-${zone}`;
-      puff.style.left = `${12 + Math.random() * 76}%`;
-      puff.style.top = `${20 + Math.random() * 55}%`;
-      puff.style.setProperty("--drift-x", `${-18 + Math.random() * 36}px`);
-      puff.style.setProperty("--drift-y", `${-14 - Math.random() * 20}px`);
+      puff.style.left = `${14 + Math.random() * 72}%`;
+      puff.style.top = `${22 + Math.random() * 50}%`;
+      puff.style.setProperty("--burst-size", zone === "perfect" ? "18px" : "14px");
+      puff.style.setProperty("--drift-x", `${-34 + Math.random() * 68}px`);
+      puff.style.setProperty("--drift-y", `${-26 - Math.random() * 28}px`);
       burstLayer.append(puff);
-      setTimeout(() => puff.remove(), 550);
+      setTimeout(() => puff.remove(), 640);
     }
   };
 
