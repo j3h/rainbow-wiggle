@@ -758,7 +758,8 @@ export function renderGameShell(container) {
       const revealed = owned || maxScoreSeen >= item.cost;
       const button = shopButtons[index];
       button.hidden = !revealed;
-      button.disabled = owned || !affordable;
+      button.disabled = owned;
+      button.classList.toggle("is-unaffordable", !owned && !affordable);
       if (!revealed) {
         return;
       }
