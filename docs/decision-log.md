@@ -120,3 +120,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Creative direction requested the rainbow meter be part of the lane instead of a separate bar.
 - Decision: Move the rainbow progress meter into the bottom of the rhythm lane as an integrated strip.
 - Consequences: Cleaner layout and tighter gameplay readability with progress and timing in one visual region.
+
+## D-018 - De-Emphasized Music Toggle
+- Date: 2026-03-02
+- Status: Accepted
+- Context: Music control should be available but not compete with gameplay focus.
+- Decision: Replace the full-width music button with a small side icon toggle.
+- Consequences: Lower visual clutter while preserving quick access to audio control.

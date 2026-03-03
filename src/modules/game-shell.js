@@ -241,9 +241,9 @@ export function renderGameShell(container) {
   sidePanel.className = "side-panel";
 
   const musicButton = document.createElement("button");
-  musicButton.className = "action action-secondary";
+  musicButton.className = "music-toggle";
   musicButton.type = "button";
-  musicButton.textContent = "Music: Off";
+  musicButton.textContent = "♪";
 
   const playAgainButton = document.createElement("button");
   playAgainButton.className = "action action-replay";
@@ -324,7 +324,11 @@ export function renderGameShell(container) {
   };
 
   const updateMusicLabel = () => {
-    musicButton.textContent = isDiscoLoopActive() ? "Music: On" : "Music: Off";
+    const active = isDiscoLoopActive();
+    musicButton.classList.toggle("is-on", active);
+    musicButton.setAttribute("aria-pressed", String(active));
+    musicButton.setAttribute("aria-label", active ? "Turn music off" : "Turn music on");
+    musicButton.title = active ? "Music on" : "Music off";
   };
 
   const launchWinCelebration = () => {
@@ -871,7 +875,8 @@ export function renderGameShell(container) {
     });
   });
 
-  controls.append(musicButton, playAgainButton);
+  controls.append(playAgainButton);
+  playPanel.append(musicButton);
   playPanel.append(critters, spriteStage, beatCue, feedback, hype, controls);
   sidePanel.append(shop);
   shellBody.append(playPanel, sidePanel);
