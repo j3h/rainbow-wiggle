@@ -169,3 +169,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Players requested control to turn purchased visual effects on/off.
 - Decision: Keep purchased items owned permanently, but allow toggling each owned effect active/inactive from its shop button.
 - Consequences: More player control over visual intensity without removing progression.
+
+## D-025 - Lasers Must Read As Lasers
+- Date: 2026-03-03
+- Status: Accepted
+- Context: Party laser effect looked abstract and did not read clearly as laser beams.
+- Decision: Use sharper beam lines, visible emitter heads, and wider sweep motion for the party-laser layer.
+- Consequences: Effect is more legible and thematically aligned with "disco lasers".

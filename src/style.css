@@ -391,19 +391,20 @@ body {
 
 .party-laser-layer {
   position: absolute;
-  inset: -18px;
+  inset: -8px 0 -6px 0;
   pointer-events: none;
   opacity: 0;
   z-index: 1;
   background:
-    linear-gradient(104deg, transparent 0 18%, rgba(255, 64, 122, 0.7) 22% 28%, transparent 32%),
-    linear-gradient(76deg, transparent 0 34%, rgba(94, 224, 255, 0.68) 38% 44%, transparent 48%),
-    linear-gradient(112deg, transparent 0 54%, rgba(255, 238, 116, 0.66) 58% 64%, transparent 68%),
-    linear-gradient(126deg, transparent 0 70%, rgba(155, 255, 192, 0.66) 74% 80%, transparent 84%);
+    linear-gradient(116deg, transparent 0 27%, rgba(255, 78, 148, 0.06) 28%, rgba(255, 78, 148, 0.95) 29% 30%, transparent 31%),
+    linear-gradient(108deg, transparent 0 46%, rgba(99, 224, 255, 0.08) 47%, rgba(99, 224, 255, 0.94) 48% 49%, transparent 50%),
+    linear-gradient(78deg, transparent 0 30%, rgba(255, 225, 96, 0.07) 31%, rgba(255, 225, 96, 0.92) 32% 33%, transparent 34%),
+    linear-gradient(72deg, transparent 0 50%, rgba(153, 255, 195, 0.08) 51%, rgba(153, 255, 195, 0.92) 52% 53%, transparent 54%),
+    linear-gradient(94deg, transparent 0 64%, rgba(255, 122, 220, 0.08) 65%, rgba(255, 122, 220, 0.9) 66% 67%, transparent 68%);
   filter:
-    drop-shadow(0 0 10px rgba(255, 116, 174, 0.65))
-    drop-shadow(0 0 10px rgba(111, 219, 255, 0.62))
-    saturate(1.16);
+    drop-shadow(0 0 11px rgba(255, 116, 174, 0.72))
+    drop-shadow(0 0 11px rgba(111, 219, 255, 0.72))
+    saturate(1.22);
   mix-blend-mode: screen;
 }
 
@@ -412,20 +413,26 @@ body {
   position: absolute;
   inset: 0;
   background:
-    repeating-linear-gradient(
-      96deg,
-      transparent 0 11%,
-      rgba(255, 84, 149, 0.46) 12% 13%,
-      transparent 14% 24%,
-      rgba(89, 229, 255, 0.44) 25% 26%,
-      transparent 27% 38%
-    );
-  opacity: 0.9;
+    radial-gradient(circle at 12% 2%, rgba(255, 101, 160, 0.95) 0 8px, rgba(255, 101, 160, 0.12) 11px, transparent 15px),
+    radial-gradient(circle at 27% 2%, rgba(105, 227, 255, 0.95) 0 8px, rgba(105, 227, 255, 0.12) 11px, transparent 15px),
+    radial-gradient(circle at 73% 2%, rgba(255, 232, 120, 0.95) 0 8px, rgba(255, 232, 120, 0.12) 11px, transparent 15px),
+    radial-gradient(circle at 88% 2%, rgba(160, 255, 200, 0.95) 0 8px, rgba(160, 255, 200, 0.12) 11px, transparent 15px);
+  opacity: 0.96;
+}
+
+.party-laser-layer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(22, 32, 56, 0.3), transparent 44%),
+    radial-gradient(ellipse at 50% 0, rgba(255, 255, 255, 0.24) 0 24%, transparent 58%);
+  opacity: 0.6;
 }
 
 .party-laser-layer.is-visible {
   opacity: 1;
-  animation: laserSweep 0.95s ease-in-out infinite alternate;
+  animation: laserSweep 1.15s ease-in-out infinite alternate;
 }
 
 .spotlight {
@@ -1133,11 +1140,11 @@ body {
 
 @keyframes laserSweep {
   from {
-    transform: translateX(-12px) rotate(-2.3deg) scale(1.01);
-    opacity: 0.82;
+    transform: translateX(-16px) rotate(-3.5deg) scale(1.01);
+    opacity: 0.76;
   }
   to {
-    transform: translateX(12px) rotate(2.3deg) scale(1.05);
+    transform: translateX(16px) rotate(3.5deg) scale(1.06);
     opacity: 1;
   }
 }
