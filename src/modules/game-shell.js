@@ -148,8 +148,12 @@ export function renderGameShell(container) {
   burstLayer.className = "burst-layer";
   const spotlight = document.createElement("div");
   spotlight.className = "spotlight";
+  const discoBallChain = document.createElement("div");
+  discoBallChain.className = "disco-ball-chain";
   const discoBallDecor = document.createElement("div");
   discoBallDecor.className = "disco-ball-decor";
+  const discoBallRays = document.createElement("div");
+  discoBallRays.className = "disco-ball-rays";
   const unicornLeft = document.createElement("div");
   unicornLeft.className = "unicorn-mascot unicorn-left";
   unicornLeft.textContent = "🦄";
@@ -172,6 +176,8 @@ export function renderGameShell(container) {
     dogSprite,
     burstLayer,
     spotlight,
+    discoBallChain,
+    discoBallRays,
     discoBallDecor,
     unicornLeft,
     unicornRight,
@@ -649,7 +655,9 @@ export function renderGameShell(container) {
     SHOP_ITEMS.forEach((item) => {
       spriteStage.classList.toggle(`has-${item.id}`, state.ownedItems.includes(item.id));
     });
+    discoBallChain.classList.toggle("is-visible", state.ownedItems.includes("disco-ball"));
     discoBallDecor.classList.toggle("is-visible", state.ownedItems.includes("disco-ball"));
+    discoBallRays.classList.toggle("is-visible", state.ownedItems.includes("disco-ball"));
     const showUnicorn = state.ownedItems.includes("unicorn-crown");
     unicornLeft.classList.toggle("is-visible", showUnicorn);
     unicornRight.classList.toggle("is-visible", showUnicorn);

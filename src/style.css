@@ -269,36 +269,86 @@ body {
 
 .disco-ball-decor {
   position: absolute;
-  top: -40px;
+  top: -54px;
   left: 50%;
-  width: 54px;
-  height: 54px;
-  margin-left: -27px;
+  width: 78px;
+  height: 78px;
+  margin-left: -39px;
   border-radius: 999px;
-  background:
-    linear-gradient(145deg, #fefefe, #c7ccd4),
-    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.3) 0 4px, rgba(120, 130, 145, 0.22) 4px 8px);
-  box-shadow: 0 0 14px rgba(160, 190, 230, 0.7);
+  background: radial-gradient(circle at 32% 26%, #fbfdff 0 22%, #dbe3ef 34%, #9ca6ba 78%, #747d91 100%);
+  box-shadow:
+    0 0 0 2px rgba(231, 238, 255, 0.7),
+    0 0 18px rgba(173, 212, 255, 0.65),
+    0 0 36px rgba(125, 178, 242, 0.4);
   opacity: 0;
   transform: scale(0.7);
   pointer-events: none;
 }
 
-.disco-ball-decor::before {
+.disco-ball-chain {
+  position: absolute;
+  top: -90px;
+  left: 50%;
+  width: 6px;
+  height: 38px;
+  margin-left: -3px;
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgba(236, 241, 249, 0.96) 0 4px,
+      rgba(161, 171, 194, 0.92) 4px 8px
+    );
+  box-shadow:
+    0 0 0 1px rgba(213, 223, 242, 0.75),
+    0 0 10px rgba(126, 159, 217, 0.4);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.disco-ball-rays {
+  position: absolute;
+  top: -42px;
+  left: 50%;
+  width: 360px;
+  height: 220px;
+  margin-left: -180px;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(110deg, transparent 0 26%, rgba(255, 87, 134, 0.22) 30% 33%, transparent 36%),
+    linear-gradient(72deg, transparent 0 38%, rgba(95, 214, 255, 0.2) 42% 45%, transparent 48%),
+    linear-gradient(96deg, transparent 0 62%, rgba(255, 229, 99, 0.2) 66% 69%, transparent 72%),
+    linear-gradient(122deg, transparent 0 74%, rgba(159, 255, 190, 0.18) 78% 81%, transparent 84%);
+  mix-blend-mode: screen;
+}
+
+.disco-ball-decor::after {
   content: "";
   position: absolute;
-  top: -24px;
-  left: 50%;
-  width: 3px;
-  height: 24px;
-  margin-left: -1.5px;
-  background: #bfc9d9;
+  inset: 5px;
+  border-radius: 999px;
+  background:
+    linear-gradient(125deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.02) 34%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.26) 0 6px, rgba(95, 116, 149, 0.25) 6px 12px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.28) 0 6px, rgba(90, 110, 138, 0.26) 6px 12px);
+  mix-blend-mode: screen;
+  opacity: 0.95;
+}
+
+.disco-ball-chain.is-visible {
+  opacity: 1;
 }
 
 .disco-ball-decor.is-visible {
   opacity: 1;
   transform: scale(1);
-  animation: discoBallSpin 1.8s linear infinite;
+  animation: discoBallMotion 1.9s linear infinite, discoBallPulse 1.2s ease-in-out infinite alternate;
+}
+
+.disco-ball-rays.is-visible {
+  opacity: 1;
+  animation: discoRaySweep 1.3s linear infinite;
 }
 
 .unicorn-mascot {
@@ -778,12 +828,39 @@ body {
   }
 }
 
-@keyframes discoBallSpin {
+@keyframes discoBallMotion {
+  0% {
+    transform: translateX(0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateX(8px) rotate(180deg) scale(1);
+  }
+  100% {
+    transform: translateX(0) rotate(360deg) scale(1);
+  }
+}
+
+@keyframes discoBallPulse {
   from {
-    transform: rotate(0deg) scale(1);
+    filter: brightness(0.95) saturate(0.95);
   }
   to {
-    transform: rotate(360deg) scale(1);
+    filter: brightness(1.12) saturate(1.1);
+  }
+}
+
+@keyframes discoRaySweep {
+  0% {
+    transform: rotate(0deg);
+    opacity: 0.72;
+  }
+  50% {
+    transform: rotate(6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(0deg);
+    opacity: 0.72;
   }
 }
 
