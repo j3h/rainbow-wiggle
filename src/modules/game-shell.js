@@ -127,17 +127,6 @@ export function renderGameShell(container) {
   subtitle.className = "subtitle";
   subtitle.textContent = "Creative directors: Lola + Alder";
 
-  const levelBanner = document.createElement("div");
-  levelBanner.className = "level-banner";
-  const levelLabel = document.createElement("span");
-  levelLabel.className = "level-label";
-  levelLabel.textContent = "Current Level";
-  const levelValue = document.createElement("strong");
-  levelValue.className = "level-value";
-  const levelHint = document.createElement("span");
-  levelHint.className = "level-hint";
-  levelBanner.append(levelLabel, levelValue, levelHint);
-
   const stats = document.createElement("p");
   stats.className = "stats";
 
@@ -669,14 +658,6 @@ export function renderGameShell(container) {
     shell.dataset.energy = String(getEnergyLevel(state.rainbowMeter));
     const levelName = RAINBOW_LEVELS[state.rainbowStageIndex];
     shell.dataset.level = levelName.toLowerCase();
-    levelValue.textContent = levelName;
-    if (state.hasWon) {
-      levelHint.textContent = "Winner! Red level complete.";
-    } else if (state.rainbowStageIndex < RAINBOW_LEVELS.length - 1) {
-      levelHint.textContent = `${100 - state.rainbowMeter}% to ${RAINBOW_LEVELS[state.rainbowStageIndex + 1]}`;
-    } else {
-      levelHint.textContent = `${100 - state.rainbowMeter}% to WIN`;
-    }
     stats.textContent = `Level ${levelName} | Meter ${state.rainbowMeter}% | Dance Points ${state.score}`;
     meterFill.style.width = `${state.rainbowMeter}%`;
     meterTrack.setAttribute("aria-valuenow", String(state.rainbowMeter));
@@ -858,7 +839,7 @@ export function renderGameShell(container) {
   playPanel.append(meterTrack, critters, spriteStage, beatCue, feedback, hype, controls);
   sidePanel.append(shop);
   shellBody.append(playPanel, sidePanel);
-  shell.append(title, subtitle, levelBanner, stats, shellBody);
+  shell.append(title, subtitle, stats, shellBody);
   applySpriteTune();
   updateMusicLabel();
   if (debugSprites) {
