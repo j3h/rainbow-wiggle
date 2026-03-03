@@ -197,8 +197,6 @@ export function renderGameShell(container) {
 
   const beatCue = document.createElement("div");
   beatCue.className = "beat-cue";
-  const beatBadge = document.createElement("p");
-  beatBadge.className = "beat-badge";
   const beatPips = document.createElement("div");
   beatPips.className = "beat-pips";
   const pipEls = Array.from({ length: 1 }, () => {
@@ -223,7 +221,7 @@ export function renderGameShell(container) {
   const beatZone = document.createElement("div");
   beatZone.className = "beat-zone";
   beatLane.append(meterTrack, hitFxLayer, beatTarget, beatZone, ...noteEls);
-  beatCue.append(beatBadge, beatPips, beatLane);
+  beatCue.append(beatPips, beatLane);
 
   const shop = document.createElement("section");
   shop.className = "shop";
@@ -727,7 +725,6 @@ export function renderGameShell(container) {
       beatLane.classList.remove("is-hot");
       beatLane.classList.toggle("is-paused", isPaused);
       beatCue.classList.remove("is-live");
-      beatBadge.textContent = "RHYTHM LANE";
       beatCue.style.setProperty("--beat-progress", "0");
       beatCue.classList.remove("is-window");
       pipEls[0].classList.remove("is-done");
@@ -753,7 +750,6 @@ export function renderGameShell(container) {
         beatLane.classList.remove("is-hot");
         beatCue.classList.remove("is-window");
         beatCue.classList.remove("is-live");
-        beatBadge.textContent = "PAUSED";
         feedback.textContent = "Paused. Tap Resume to keep dancing.";
         hype.textContent = "Dance floor on hold";
         noteEls.forEach((note) => {
@@ -772,8 +768,6 @@ export function renderGameShell(container) {
       feedback.textContent = `${getCountdownText(msUntilBeat)} Keep the rhythm!`;
       beatLane.classList.toggle("is-hot", msUntilBeat < 220 && msUntilBeat > -140);
       beatCue.classList.add("is-live");
-      beatBadge.textContent = "RHYTHM LANE";
-      beatBadge.classList.toggle("is-hot", false);
       beatCue.classList.toggle("is-window", msUntilBeat < 220 && msUntilBeat > -140);
       beatCue.style.setProperty("--beat-progress", String(progress));
 

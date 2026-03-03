@@ -132,22 +132,6 @@ body {
   --beat-progress: 0;
 }
 
-.beat-badge {
-  margin: 0;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-  font-size: clamp(1.2rem, 4.5vw, 2rem);
-  color: #2f4a68;
-}
-
-.beat-cue.is-live .beat-badge {
-  color: #173550;
-}
-
-.beat-badge.is-hot {
-  color: #d65229;
-}
-
 .beat-lane {
   position: relative;
   min-height: 56px;
