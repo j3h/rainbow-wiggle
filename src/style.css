@@ -203,20 +203,6 @@ body {
   z-index: 1;
 }
 
-.beat-cursor {
-  position: absolute;
-  left: 0%;
-  top: 1px;
-  width: 22px;
-  height: 22px;
-  margin-left: -11px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #f7fbff, #4fa0ff 45%, #1b58d6);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 0 0 10px rgba(16, 68, 169, 0.52);
-  z-index: 3;
-}
-
 .beat-note {
   position: absolute;
   left: 0%;
@@ -265,10 +251,6 @@ body {
 .beat-cue.is-window .beat-zone {
   background: rgba(239, 111, 62, 0.24);
   border-color: #ef6f3e;
-}
-
-.beat-cue.is-window .beat-cursor {
-  transform: scale(1.08);
 }
 
 .shell[data-level="violet"] .beat-lane {

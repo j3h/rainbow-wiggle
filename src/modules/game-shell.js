@@ -210,8 +210,6 @@ export function renderGameShell(container) {
   beatLane.className = "beat-lane";
   const beatTarget = document.createElement("div");
   beatTarget.className = "beat-target";
-  const beatCursor = document.createElement("div");
-  beatCursor.className = "beat-cursor";
   const noteEls = Array.from({ length: NOTE_PREVIEW_COUNT }, () => {
     const note = document.createElement("span");
     note.className = "beat-note";
@@ -219,7 +217,7 @@ export function renderGameShell(container) {
   });
   const beatZone = document.createElement("div");
   beatZone.className = "beat-zone";
-  beatLane.append(beatTarget, beatZone, ...noteEls, beatCursor);
+  beatLane.append(beatTarget, beatZone, ...noteEls);
   beatCue.append(beatBadge, beatPips, beatLane);
 
   const shop = document.createElement("section");
@@ -707,7 +705,6 @@ export function renderGameShell(container) {
       danceButton.classList.remove("is-hot");
       beatCue.classList.remove("is-live");
       beatBadge.textContent = "READY";
-      beatCursor.style.left = `${LANE_START_PCT}%`;
       beatCue.style.setProperty("--beat-progress", "0");
       beatCue.classList.remove("is-window");
       pipEls[0].classList.remove("is-done");
@@ -736,7 +733,6 @@ export function renderGameShell(container) {
       beatBadge.textContent = getVisualCueText(msUntilBeat, beatDurationMs);
       beatBadge.classList.toggle("is-hot", msUntilBeat < 220 && msUntilBeat > -120);
       beatCue.classList.toggle("is-window", msUntilBeat < 220 && msUntilBeat > -140);
-      beatCursor.style.left = `${(LANE_START_PCT + progress * laneSpan).toFixed(2)}%`;
       beatCue.style.setProperty("--beat-progress", String(progress));
 
       let previousNotePos = LANE_TARGET_PCT + MIN_NOTE_GAP_PCT;
@@ -760,7 +756,7 @@ export function renderGameShell(container) {
         previousNotePos = lanePosition;
       });
       pipEls[0].classList.add("is-current");
-      hype.textContent = "Watch incoming notes and tap in the zone!";
+      hype.textContent = "Hit orange notes when they enter the target zone!";
     }
 
     playAgainButton.classList.toggle("is-visible", state.hasWon);
