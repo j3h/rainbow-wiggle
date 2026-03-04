@@ -44,6 +44,16 @@ const SHOP_ITEMS = [
   { id: "starlight-fog", name: "Starlight Fog", cost: 72, effect: "Rare glow haze", unlockBossClears: 1 },
   { id: "confetti-cannon", name: "Confetti Cannon", cost: 96, effect: "Rare confetti blasts on perfect + boss", unlockBossClears: 3 }
 ];
+const SHOP_ICONS = {
+  "neon-collar": "💡",
+  "disco-sparkles": "✨",
+  "rainbow-trail": "🌈",
+  "party-lasers": "🔦",
+  "disco-ball": "🪩",
+  "unicorn-crown": "🦄",
+  "starlight-fog": "🌟",
+  "confetti-cannon": "🎉"
+};
 const DEFAULT_SPRITE_TUNE = {
   zoom: 4,
   catX: 22,
@@ -245,18 +255,20 @@ export function renderGameShell(container) {
   beatLane.append(meterTrack, hitFxLayer, beatTarget, beatZone, ...noteEls, laneCallout);
   beatCue.append(beatLane, laneHud);
 
+  const shopInterstitial = document.createElement("section");
+  shopInterstitial.className = "shop-interstitial";
   const shop = document.createElement("section");
-  shop.className = "shop shop-overlay";
+  shop.className = "shop";
   const shopTitle = document.createElement("h2");
   shopTitle.className = "shop-title";
   shopTitle.textContent = "Rainbow Shop";
   const shopHeader = document.createElement("div");
   shopHeader.className = "shop-header";
-  const shopCloseButton = document.createElement("button");
-  shopCloseButton.className = "shop-close";
-  shopCloseButton.type = "button";
-  shopCloseButton.textContent = "✕";
-  shopCloseButton.setAttribute("aria-label", "Close shop overlay");
+  const shopDoneButton = document.createElement("button");
+  shopDoneButton.className = "shop-done";
+  shopDoneButton.type = "button";
+  shopDoneButton.textContent = "Done";
+  shopDoneButton.setAttribute("aria-label", "Done shopping");
   const shopHint = document.createElement("p");
   shopHint.className = "shop-hint";
   shopHint.textContent = "Shop appears between levels.";
@@ -309,8 +321,9 @@ export function renderGameShell(container) {
     return button;
   });
   shopList.append(...shopButtons);
-  shopHeader.append(shopTitle, shopCloseButton);
+  shopHeader.append(shopTitle, shopDoneButton);
   shop.append(shopHeader, shopHint, shopList);
+  shopInterstitial.append(shop);
 
   const applySpriteTune = () => {
     const sample = getFrameSample(spriteTune, 0);
@@ -931,9 +944,8 @@ export function renderGameShell(container) {
       shopInterstitialDismissed = false;
     }
     const showShopInterstitial = shouldShowShopInterstitial && !shopInterstitialDismissed;
-    shop.classList.toggle("is-visible", showShopInterstitial);
-    shop.setAttribute("aria-hidden", String(!showShopInterstitial));
-    shopCloseButton.hidden = !showShopInterstitial;
+    shopInterstitial.classList.toggle("is-visible", showShopInterstitial);
+    shopInterstitial.setAttribute("aria-hidden", String(!showShopInterstitial));
     if (state.hasWon) {
       shopTitle.textContent = "Victory Shop";
       shopHint.textContent = "Try your unlocked effects, then tap Play Again.";
@@ -1017,12 +1029,18 @@ export function renderGameShell(container) {
       button.classList.toggle("is-unaffordable", !owned && !affordable);
       button.classList.toggle("is-enabled", owned && enabled);
       button.classList.toggle("is-rare", Boolean(item.unlockBossClears));
+      button.title = item.effect;
       if (!revealed) {
         return;
       }
-      button.textContent = owned
-        ? `${item.name} - ${enabled ? "On" : "Off"}`
-        : `${item.name} (${item.cost}) - ${item.effect}`;
+      const icon = SHOP_ICONS[item.id] || "🎁";
+      const main = document.createElement("span");
+      main.className = "shop-item-main";
+      main.textContent = `${icon} ${item.name}`;
+      const chip = document.createElement("span");
+      chip.className = "shop-item-chip";
+      chip.textContent = owned ? (enabled ? "On" : "Off") : `${item.cost}`;
+      button.replaceChildren(main, chip);
     });
 
     if (nextBeatAt === null) {
@@ -1107,6 +1125,10 @@ export function renderGameShell(container) {
   };
 
   const handleLaneTap = () => {
+    if ((state.hasWon || pendingLevelStageName) && !shopInterstitialDismissed) {
+      showStageBanner("Tap Done to continue", "info", 900);
+      return;
+    }
     if (isPaused || levelTransitionUntil > performance.now()) {
       return;
     }
@@ -1235,6 +1257,10 @@ export function renderGameShell(container) {
     if (levelTransitionUntil > performance.now()) {
       return;
     }
+    if ((state.hasWon || pendingLevelStageName) && !shopInterstitialDismissed) {
+      showStageBanner("Tap Done to continue", "info", 900);
+      return;
+    }
     if (nextBeatAt === null && !isPaused) {
       startRound();
       return;
@@ -1275,7 +1301,7 @@ export function renderGameShell(container) {
     updateMuteLabel();
   });
 
-  shopCloseButton.addEventListener("click", () => {
+  shopDoneButton.addEventListener("click", () => {
     shopInterstitialDismissed = true;
     render();
   });
@@ -1373,7 +1399,7 @@ export function renderGameShell(container) {
 
   laneHud.append(stats, modeButton, playPauseButton, musicButton, muteButton);
   controls.append(playAgainButton);
-  playPanel.append(spriteStage, beatCue, controls, shop);
+  playPanel.append(spriteStage, beatCue, controls, shopInterstitial);
   shellBody.append(playPanel);
   shell.append(title, subtitle, shellBody);
   applySpriteTune();

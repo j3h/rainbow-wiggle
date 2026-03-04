@@ -260,3 +260,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Overlay placement can obscure lane controls, and players sometimes want to dismiss interstitial UI quickly.
 - Decision: Place shop overlay lower/right to avoid HUD controls and add an explicit close (`X`) button that dismisses the current interstitial.
 - Consequences: Better control access and reduced visual blocking while keeping between-level shop flow available.
+
+## D-038 - Full Modal Shop Interstitial + Done Gate
+- Date: 2026-03-03
+- Status: Accepted
+- Context: Partial overlay still conflicted with controls and felt visually heavy/text-dense.
+- Decision: Use a full modal interstitial overlay that blocks play controls and requires a `Done` action to continue; redesign shop rows into icon + compact chip cards.
+- Consequences: No control overlap, clearer pacing break, and a lighter/funner shop presentation.
