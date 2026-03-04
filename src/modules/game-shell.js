@@ -17,6 +17,8 @@ const NOTE_PREVIEW_COUNT = 4;
 const LANE_START_PCT = 8;
 const LANE_TARGET_PCT = 90;
 const MIN_NOTE_GAP_PCT = 10;
+const BOSS_START_METER = 70;
+const BOSS_PATTERN = [1, 1, 2, 1, 2, 1];
 const WIGGLE_MS = 850;
 const FAST_TAP_SUPPRESS_MS = 450;
 const SPRITE_SHEET_SRC = new URL("../assets/sprites/cat-dog-butt-wiggle-base.png", import.meta.url).href;
@@ -29,7 +31,9 @@ const SHOP_ITEMS = [
   { id: "rainbow-trail", name: "Rainbow Trail", cost: 28, effect: "Rainbow motion trails behind wiggles" },
   { id: "party-lasers", name: "Party Lasers", cost: 36, effect: "Moving laser beams in the background" },
   { id: "disco-ball", name: "Disco Ball", cost: 44, effect: "Spinning disco ball over the dance floor" },
-  { id: "unicorn-crown", name: "Unicorn Crown", cost: 50, effect: "Legend crown sparkles for both dancers" }
+  { id: "unicorn-crown", name: "Unicorn Crown", cost: 50, effect: "Legend crown sparkles for both dancers" },
+  { id: "starlight-fog", name: "Starlight Fog", cost: 72, effect: "Rare glow haze", unlockBossClears: 1 },
+  { id: "confetti-cannon", name: "Confetti Cannon", cost: 96, effect: "Rare mega party bursts", unlockBossClears: 3 }
 ];
 const DEFAULT_SPRITE_TUNE = {
   zoom: 4,
@@ -115,6 +119,9 @@ export function renderGameShell(container) {
   let resumeMusicAfterPause = false;
   let spriteSheetAspect = FALLBACK_SHEET_ASPECT;
   let selectedDifficultyMode = "auto";
+  let bossClearCount = 0;
+  const bossClearedStages = new Set();
+  const unlockedCharacters = [];
   const params = new URLSearchParams(window.location.search);
   const debugSprites = params.get("debugSprites") === "1";
   const debugInput = params.get("debugInput") === "1";
@@ -164,6 +171,8 @@ export function renderGameShell(container) {
   unicornRight.textContent = "🦄";
   const winEffectsLayer = document.createElement("div");
   winEffectsLayer.className = "win-effects";
+  const guestMascot = document.createElement("div");
+  guestMascot.className = "guest-mascot";
 
   const catSprite = document.createElement("div");
   catSprite.className = "sprite sprite-cat";
@@ -184,6 +193,7 @@ export function renderGameShell(container) {
     discoBallDecor,
     unicornLeft,
     unicornRight,
+    guestMascot,
     winEffectsLayer
   );
 
@@ -407,19 +417,21 @@ export function renderGameShell(container) {
   };
 
   const getCurrentDifficulty = () => getDifficultySettings(selectedDifficultyMode, state.rainbowStageIndex);
+  const isBossPhase = () => state.rainbowMeter >= BOSS_START_METER && !state.hasWon;
 
   const getPatternValueAt = (index) => {
-    const pattern = getCurrentDifficulty().tapPattern;
+    const pattern = isBossPhase() ? BOSS_PATTERN : getCurrentDifficulty().tapPattern;
     return pattern[index % pattern.length];
   };
 
   const isHazardNoteAt = (index) => {
     const { hazardRate } = getCurrentDifficulty();
-    if (hazardRate <= 0) {
+    const effectiveHazardRate = Math.min(0.45, hazardRate + (isBossPhase() ? 0.16 : 0));
+    if (effectiveHazardRate <= 0) {
       return false;
     }
     const hash = (index * 37 + state.rainbowStageIndex * 17 + 11) % 100;
-    return hash < Math.round(hazardRate * 100) && index % 2 === 1;
+    return hash < Math.round(effectiveHazardRate * 100) && index % 2 === 1;
   };
 
   const startRound = () => {
@@ -805,6 +817,7 @@ export function renderGameShell(container) {
     const levelName = RAINBOW_LEVELS[state.rainbowStageIndex];
     shell.dataset.level = levelName.toLowerCase();
     shell.dataset.difficulty = getCurrentDifficulty().tier;
+    shell.classList.toggle("is-boss", isBossPhase());
     maxScoreSeen = Math.max(maxScoreSeen, state.score);
     stats.textContent = String(state.score);
     stats.setAttribute("aria-label", `Score ${state.score}`);
@@ -822,17 +835,23 @@ export function renderGameShell(container) {
     unicornLeft.classList.toggle("is-visible", showUnicorn);
     unicornRight.classList.toggle("is-visible", showUnicorn);
     shell.classList.toggle("is-win", state.hasWon);
+    guestMascot.classList.toggle("is-visible", unlockedCharacters.length > 0);
+    if (unlockedCharacters.length > 0) {
+      guestMascot.textContent = unlockedCharacters[unlockedCharacters.length - 1];
+    }
 
     SHOP_ITEMS.forEach((item, index) => {
       const owned = state.ownedItems.includes(item.id);
       const enabled = state.enabledItems.includes(item.id);
       const affordable = state.score >= item.cost;
+      const unlockedByBoss = !item.unlockBossClears || bossClearCount >= item.unlockBossClears;
       const revealed = owned || maxScoreSeen >= item.cost;
       const button = shopButtons[index];
-      button.hidden = !revealed;
+      button.hidden = !unlockedByBoss || !revealed;
       button.disabled = false;
       button.classList.toggle("is-unaffordable", !owned && !affordable);
       button.classList.toggle("is-enabled", owned && enabled);
+      button.classList.toggle("is-rare", Boolean(item.unlockBossClears));
       if (!revealed) {
         return;
       }
@@ -861,7 +880,7 @@ export function renderGameShell(container) {
       } else {
         feedback.textContent = buildFeedback(state.lastZone);
       }
-      hype.textContent = hypeText;
+      hype.textContent = isBossPhase() ? "BOSS STORM incoming!" : hypeText;
     } else {
       beatLane.classList.toggle("is-paused", isPaused);
       if (isPaused) {
@@ -909,7 +928,7 @@ export function renderGameShell(container) {
         note.classList.toggle("is-hazard", isHazardNoteAt(beatPatternIndex + index));
         previousNotePos = lanePosition;
       });
-      hype.textContent = "Hit orange notes when they enter the target zone!";
+      hype.textContent = isBossPhase() ? "BOSS STORM! Dodge red notes!" : "Hit orange notes when they enter the target zone!";
     }
 
     playAgainButton.classList.toggle("is-visible", state.hasWon);
@@ -929,6 +948,8 @@ export function renderGameShell(container) {
 
     const deltaMs = performance.now() - nextBeatAt;
     const hadWonBefore = state.hasWon;
+    const previousStage = state.rainbowStageIndex;
+    const bossWasActive = isBossPhase();
     const difficulty = getCurrentDifficulty();
     let zone = judgeTiming(deltaMs);
     const tappedHazard = isHazardNoteAt(beatPatternIndex) && zone !== "miss";
@@ -939,6 +960,23 @@ export function renderGameShell(container) {
     playWiggle(zone);
     launchBurst(zone);
     state = applyAction(state, { type: "APPLY_JUDGMENT", zone, meterScale: difficulty.meterScale });
+    if (state.rainbowStageIndex > previousStage && bossWasActive && !bossClearedStages.has(previousStage)) {
+      bossClearedStages.add(previousStage);
+      bossClearCount += 1;
+      const characterRewards = ["🐼", "🦊", "🐯", "🐸"];
+      if (bossClearCount <= characterRewards.length) {
+        unlockedCharacters.push(characterRewards[bossClearCount - 1]);
+      }
+      const rareUnlocks = SHOP_ITEMS.filter((item) => item.unlockBossClears === bossClearCount).map((item) => item.name);
+      const parts = [`Boss clear ${bossClearCount}!`];
+      if (rareUnlocks.length > 0) {
+        parts.push(`Rare shop unlocked: ${rareUnlocks.join(", ")}`);
+      }
+      if (unlockedCharacters.length > 0) {
+        parts.push(`New character: ${unlockedCharacters[unlockedCharacters.length - 1]}`);
+      }
+      lastShopMessage = parts.join(" ");
+    }
     if (!hadWonBefore && state.hasWon) {
       launchWinCelebration();
     }

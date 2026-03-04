@@ -190,3 +190,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Creative direction requested a new mechanic and explicitly selected lane hazards.
 - Decision: Add red hazard notes that should be skipped; tapping a hazard converts the tap to a miss with clear feedback.
 - Consequences: Adds a fresh challenge dimension without heavier punishment.
+
+## D-028 - Per-Level Boss Phase + Reward Unlocks
+- Date: 2026-03-03
+- Status: Accepted
+- Context: Creative direction requested immediate boss moments, new characters, and rare shop rewards.
+- Decision: Start a boss phase near the end of each level with denser notes/hazards, then award boss clears that unlock guest characters and rare shop items.
+- Consequences: Stronger level identity, clearer escalation, and better long-term progression rewards.

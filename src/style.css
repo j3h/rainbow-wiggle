@@ -53,6 +53,10 @@ body {
   animation: rainbowShell 1.4s linear infinite;
 }
 
+.shell.is-boss {
+  box-shadow: 0 16px 36px rgba(25, 45, 82, 0.17), 0 0 30px rgba(255, 92, 150, 0.34);
+}
+
 .title {
   margin: 0;
   font-size: clamp(1.8rem, 5vw, 3rem);
@@ -589,6 +593,23 @@ body {
   animation-name: unicornBounceMirror;
 }
 
+.guest-mascot {
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  transform: translateX(-50%) scale(0.82);
+  font-size: 52px;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 0 8px rgba(255, 230, 173, 0.75));
+}
+
+.guest-mascot.is-visible {
+  opacity: 1;
+  animation: guestBounce 1.05s ease-in-out infinite alternate;
+}
+
 .win-effects {
   position: absolute;
   inset: -12px 0 0 0;
@@ -639,6 +660,15 @@ body {
     0 0 56px rgba(214, 87, 255, 0.32);
   filter: saturate(1.2) brightness(1.06);
   animation: neonPulse 1.2s ease-in-out infinite alternate;
+}
+
+.sprite-stage.has-starlight-fog {
+  box-shadow: inset 0 0 28px rgba(173, 231, 255, 0.24), 0 0 22px rgba(202, 145, 255, 0.2);
+  border-radius: 16px;
+}
+
+.sprite-stage.has-confetti-cannon {
+  animation: cannonPulse 0.9s ease-in-out infinite alternate;
 }
 
 .sprite-stage.has-disco-sparkles::after {
@@ -870,6 +900,11 @@ body {
 .shop-item.is-enabled {
   border-color: #6fc88a;
   box-shadow: 0 0 0 2px rgba(111, 200, 138, 0.2);
+}
+
+.shop-item.is-rare {
+  border-color: #be8ef7;
+  background: linear-gradient(180deg, #fffaff, #f4e9ff);
 }
 
 .hype {
@@ -1124,6 +1159,24 @@ body {
   to {
     filter: brightness(1.08);
     transform: scaleY(1.04);
+  }
+}
+
+@keyframes guestBounce {
+  from {
+    transform: translateX(-50%) translateY(6px) scale(0.78);
+  }
+  to {
+    transform: translateX(-50%) translateY(-2px) scale(0.86);
+  }
+}
+
+@keyframes cannonPulse {
+  from {
+    filter: saturate(1.02) brightness(1);
+  }
+  to {
+    filter: saturate(1.2) brightness(1.08);
   }
 }
 
