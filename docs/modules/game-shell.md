@@ -18,6 +18,7 @@ Render the single-screen game UI and wire input, rhythm timing, and shop interac
 - Must pause briefly with celebration messaging when advancing to the next rainbow level.
 - Must trigger extra confetti bursts when `confetti-cannon` is enabled.
 - Must render a pulsing lane callout and require tap-to-start at game start and after level transitions.
+- Must show temporary stage banners for transient events and sticky stage banners for persistent states (for example, `Paused` and final win).
 - Must keep lane timing cues and note previews in sync with the active rhythm schedule.
 - Must support tap/click and keyboard lane input (`Enter` / `Space`) for play actions.
 - Must provide `Pause` / `Resume`, `Play Again`, and music toggle controls.

@@ -441,6 +441,59 @@ body {
   pointer-events: none;
 }
 
+.stage-banner-layer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -8px;
+  display: grid;
+  justify-items: center;
+  pointer-events: none;
+  z-index: 12;
+}
+
+.stage-banner {
+  margin: 0;
+  padding: 0.28rem 0.72rem;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: rgba(22, 34, 55, 0.86);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+  animation: stageBannerPop var(--banner-duration, 1200ms) ease-out forwards;
+}
+
+.stage-banner-good {
+  border-color: rgba(191, 255, 208, 0.95);
+  box-shadow: 0 0 12px rgba(105, 209, 132, 0.5);
+}
+
+.stage-banner-perfect {
+  border-color: rgba(189, 240, 255, 0.98);
+  box-shadow: 0 0 14px rgba(113, 222, 255, 0.62), 0 0 18px rgba(213, 145, 255, 0.5);
+}
+
+.stage-banner-rare {
+  border-color: rgba(228, 187, 255, 0.98);
+  box-shadow: 0 0 14px rgba(183, 136, 255, 0.66);
+}
+
+.stage-banner-warn {
+  border-color: rgba(255, 175, 175, 0.98);
+  box-shadow: 0 0 14px rgba(255, 102, 132, 0.66);
+}
+
+.stage-banner-sticky {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  animation: none;
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.18), 0 0 18px rgba(107, 160, 255, 0.35);
+}
+
 .burst-layer {
   position: absolute;
   inset: 0;
@@ -1264,6 +1317,25 @@ body {
   to {
     transform: translate(-50%, -50%) scale(1.02);
     box-shadow: 0 0 0 6px rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes stageBannerPop {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  14% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  78% {
+    opacity: 1;
+    transform: translateY(-1px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
   }
 }
 

@@ -225,3 +225,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Start states and level starts needed stronger onboarding and clearer restart pacing.
 - Decision: Show pulsing lane callout text before first start and after each level transition; require tap-to-start instead of auto-start.
 - Consequences: Clearer readiness moment, better level pacing, and more playful presentation.
+
+## D-033 - Sticky Banners For Persistent States
+- Date: 2026-03-03
+- Status: Accepted
+- Context: Temporary banners were good for momentary feedback, but persistent states like pause/win needed always-on visibility.
+- Decision: Keep temporary banners for short events and add sticky stage banners that remain until state changes (used for `Paused` and final win).
+- Consequences: Critical state remains obvious without reintroducing large persistent text blocks in the layout.

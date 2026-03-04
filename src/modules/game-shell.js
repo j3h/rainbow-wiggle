@@ -128,6 +128,7 @@ export function renderGameShell(container) {
   let pendingLevelStageName = "";
   let laneCalloutText = START_CALLOUTS[0];
   let lastAmbientConfettiAt = 0;
+  let stickyStageBanner = null;
   let spriteSheetAspect = FALLBACK_SHEET_ASPECT;
   let selectedDifficultyMode = "auto";
   let bossClearCount = 0;
@@ -182,6 +183,8 @@ export function renderGameShell(container) {
   unicornRight.textContent = "🦄";
   const winEffectsLayer = document.createElement("div");
   winEffectsLayer.className = "win-effects";
+  const stageBannerLayer = document.createElement("div");
+  stageBannerLayer.className = "stage-banner-layer";
   const guestMascot = document.createElement("div");
   guestMascot.className = "guest-mascot";
 
@@ -204,6 +207,7 @@ export function renderGameShell(container) {
     discoBallDecor,
     unicornLeft,
     unicornRight,
+    stageBannerLayer,
     guestMascot,
     winEffectsLayer
   );
@@ -473,6 +477,10 @@ export function renderGameShell(container) {
     if (nextBeatAt !== null) {
       return;
     }
+    clearStickyStageBanner();
+    if (laneCalloutText) {
+      showStageBanner(laneCalloutText, "info", 1000);
+    }
     laneCalloutText = "";
     beatPatternIndex = 0;
     const firstBeatsAhead = getPatternValueAt(beatPatternIndex);
@@ -504,6 +512,40 @@ export function renderGameShell(container) {
 
   const launchWinCelebration = (count = 60) => {
     launchConfettiBurst(count);
+  };
+
+  const showStageBanner = (text, tone = "info", durationMs = 1200) => {
+    if (!text) {
+      return;
+    }
+    const banner = document.createElement("p");
+    banner.className = `stage-banner stage-banner-${tone}`;
+    banner.textContent = text;
+    banner.style.setProperty("--banner-duration", `${durationMs}ms`);
+    stageBannerLayer.append(banner);
+    setTimeout(() => banner.remove(), durationMs + 240);
+  };
+
+  const setStickyStageBanner = (text, tone = "info") => {
+    if (!text) {
+      return;
+    }
+    if (stickyStageBanner) {
+      stickyStageBanner.remove();
+    }
+    const banner = document.createElement("p");
+    banner.className = `stage-banner stage-banner-${tone} stage-banner-sticky`;
+    banner.textContent = text;
+    stageBannerLayer.prepend(banner);
+    stickyStageBanner = banner;
+  };
+
+  const clearStickyStageBanner = () => {
+    if (!stickyStageBanner) {
+      return;
+    }
+    stickyStageBanner.remove();
+    stickyStageBanner = null;
   };
 
   const launchBurst = (zone) => {
@@ -978,7 +1020,6 @@ export function renderGameShell(container) {
       const msUntilBeat = nextBeatAt - now;
       const progress = beatDurationMs <= 0 ? 1 : clamp01(1 - msUntilBeat / beatDurationMs);
       const laneSpan = LANE_TARGET_PCT - LANE_START_PCT;
-      feedback.textContent = getCountdownText(msUntilBeat);
       beatLane.classList.toggle("is-hot", msUntilBeat < 220 && msUntilBeat > -140);
       beatCue.classList.add("is-live");
       beatCue.classList.toggle("is-window", msUntilBeat < 220 && msUntilBeat > -140);
@@ -1053,15 +1094,24 @@ export function renderGameShell(container) {
         parts.push(`New character: ${unlockedCharacters[unlockedCharacters.length - 1]}`);
       }
       lastShopMessage = parts.join(" ");
+      showStageBanner(lastShopMessage, "rare", 1800);
       if (state.enabledItems.includes("confetti-cannon")) {
         launchConfettiBurst(44, 140, 1.5, 1.0);
       }
     }
     if (!hadWonBefore && state.hasWon) {
       launchWinCelebration();
+      setStickyStageBanner("RED LEVEL COMPLETE! YOU WIN!", "perfect");
     }
     comboStreak = state.lastZone === "miss" ? 0 : comboStreak + 1;
     hypeText = tappedHazard ? "Hazard! Skip red notes." : getHypeText(state.lastZone, comboStreak);
+    if (tappedHazard) {
+      showStageBanner("Hazard! Skip red notes!", "warn", 1000);
+    } else if (zone === "perfect") {
+      showStageBanner("PERFECT!", "perfect", 900);
+    } else if (zone === "good") {
+      showStageBanner("Nice!", "good", 800);
+    }
 
     const levelAdvanced = state.rainbowStageIndex > previousStage;
 
@@ -1076,6 +1126,7 @@ export function renderGameShell(container) {
       pendingLevelStageName = RAINBOW_LEVELS[state.rainbowStageIndex];
       laneCalloutText = `LEVEL UP! ${pendingLevelStageName} incoming...`;
       launchWinCelebration(26);
+      showStageBanner(`LEVEL UP! ${pendingLevelStageName}!`, "info", 1500);
     } else {
       beatPatternIndex += 1;
       const beatsAhead = getPatternValueAt(beatPatternIndex);
@@ -1103,6 +1154,7 @@ export function renderGameShell(container) {
       }
       stopCountdownRender();
       updateMusicLabel();
+      setStickyStageBanner("Paused", "warn");
       render();
       return;
     }
@@ -1122,6 +1174,8 @@ export function renderGameShell(container) {
       startCountdownRender();
     }
     updateMusicLabel();
+    clearStickyStageBanner();
+    showStageBanner("Back to the beat!", "good", 850);
     render();
   };
 
@@ -1183,6 +1237,7 @@ export function renderGameShell(container) {
     pendingLevelStageName = "";
     laneCalloutText = START_CALLOUTS[0];
     lastAmbientConfettiAt = 0;
+    clearStickyStageBanner();
     stopCountdownRender();
     render();
   });
@@ -1235,6 +1290,7 @@ export function renderGameShell(container) {
       if (state.ownedItems.includes(item.id)) {
         state = applyAction(state, { type: "TOGGLE_ITEM", itemId: item.id });
         lastShopMessage = `Shop: ${item.name} ${state.enabledItems.includes(item.id) ? "ON" : "OFF"}.`;
+        showStageBanner(lastShopMessage, "info", 1100);
         render();
         return;
       }
@@ -1248,13 +1304,14 @@ export function renderGameShell(container) {
       } else {
         lastShopMessage = `Shop: ${item.name} already owned.`;
       }
+      showStageBanner(lastShopMessage, state.ownedItems.length > beforeOwned ? "good" : "info", 1200);
       render();
     });
   });
 
   laneHud.append(stats, modeButton, playPauseButton, musicButton);
   controls.append(playAgainButton);
-  playPanel.append(spriteStage, beatCue, feedback, hype, controls);
+  playPanel.append(spriteStage, beatCue, controls);
   sidePanel.append(shop);
   shellBody.append(playPanel, sidePanel);
   shell.append(title, subtitle, shellBody);
