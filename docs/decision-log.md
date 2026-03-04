@@ -197,3 +197,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Creative direction requested immediate boss moments, new characters, and rare shop rewards.
 - Decision: Start a boss phase near the end of each level with denser notes/hazards, then award boss clears that unlock guest characters and rare shop items.
 - Consequences: Stronger level identity, clearer escalation, and better long-term progression rewards.
+
+## D-029 - Level-Up Celebration Intermission
+- Date: 2026-03-03
+- Status: Accepted
+- Context: Level transitions felt abrupt when note flow reset at stage boundaries.
+- Decision: Insert a short level-up transition pause with celebration messaging before next level note flow starts.
+- Consequences: Better pacing readability and stronger reward feel between levels.

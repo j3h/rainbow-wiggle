@@ -19,6 +19,7 @@ const LANE_TARGET_PCT = 90;
 const MIN_NOTE_GAP_PCT = 10;
 const BOSS_START_METER = 70;
 const BOSS_PATTERN = [1, 1, 2, 1, 2, 1];
+const LEVEL_TRANSITION_MS = 1400;
 const WIGGLE_MS = 850;
 const FAST_TAP_SUPPRESS_MS = 450;
 const SPRITE_SHEET_SRC = new URL("../assets/sprites/cat-dog-butt-wiggle-base.png", import.meta.url).href;
@@ -117,6 +118,8 @@ export function renderGameShell(container) {
   let isPaused = false;
   let pauseHasActiveRound = false;
   let resumeMusicAfterPause = false;
+  let levelTransitionUntil = 0;
+  let pendingLevelStageName = "";
   let spriteSheetAspect = FALLBACK_SHEET_ASPECT;
   let selectedDifficultyMode = "auto";
   let bossClearCount = 0;
@@ -394,6 +397,14 @@ export function renderGameShell(container) {
   };
 
   const updatePlayPauseLabel = () => {
+    if (levelTransitionUntil > performance.now()) {
+      playPauseButton.textContent = "⏳";
+      playPauseButton.setAttribute("aria-label", "Level transition");
+      playPauseButton.title = "Level transition";
+      playPauseButton.disabled = true;
+      return;
+    }
+
     if (state.hasWon) {
       playPauseButton.textContent = "▶";
       playPauseButton.setAttribute("aria-label", "Round complete. Tap Play Again.");
@@ -435,6 +446,9 @@ export function renderGameShell(container) {
   };
 
   const startRound = () => {
+    if (levelTransitionUntil > performance.now()) {
+      return;
+    }
     if (!musicStarted) {
       startDiscoLoop();
       musicStarted = true;
@@ -458,8 +472,8 @@ export function renderGameShell(container) {
     render();
   };
 
-  const launchWinCelebration = () => {
-    for (let index = 0; index < 60; index += 1) {
+  const launchWinCelebration = (count = 60) => {
+    for (let index = 0; index < count; index += 1) {
       const piece = document.createElement("span");
       piece.className = "win-confetti";
       piece.style.left = `${Math.random() * 100}%`;
@@ -803,6 +817,16 @@ export function renderGameShell(container) {
 
   const render = () => {
     const now = performance.now();
+    if (levelTransitionUntil > 0 && now >= levelTransitionUntil && !state.hasWon && nextBeatAt === null) {
+      levelTransitionUntil = 0;
+      pendingLevelStageName = "";
+      const firstBeatsAhead = getPatternValueAt(beatPatternIndex);
+      const firstBeat = getNextAlignedBeatPerfTime(firstBeatsAhead);
+      beatDurationMs = Math.max(500, getBeatDurationMs() * firstBeatsAhead);
+      nextBeatAt = firstBeat || performance.now() + beatDurationMs;
+      startCountdownRender();
+    }
+
     const currentBeatsAhead = getPatternValueAt(beatPatternIndex);
     if (!isPaused && nextBeatAt !== null) {
       beatDurationMs = getBeatDurationMs() * currentBeatsAhead;
@@ -876,7 +900,9 @@ export function renderGameShell(container) {
       noteEls.forEach((note) => {
         note.style.opacity = "0";
       });
-      if (!state.lastZone) {
+      if (levelTransitionUntil > now && pendingLevelStageName) {
+        feedback.textContent = `LEVEL UP! Welcome to ${pendingLevelStageName}!`;
+      } else if (!state.lastZone) {
         feedback.textContent = "Tap the lane to start. Hit orange notes in the target zone.";
       } else if (lastShopMessage) {
         feedback.textContent = lastShopMessage;
@@ -887,7 +913,11 @@ export function renderGameShell(container) {
       } else {
         feedback.textContent = buildFeedback(state.lastZone);
       }
-      hype.textContent = isBossPhase() ? "BOSS STORM incoming!" : hypeText;
+      if (levelTransitionUntil > now) {
+        hype.textContent = "Dance break! Next level starts now.";
+      } else {
+        hype.textContent = isBossPhase() ? "BOSS STORM incoming!" : hypeText;
+      }
     } else {
       beatLane.classList.toggle("is-paused", isPaused);
       if (isPaused) {
@@ -944,7 +974,7 @@ export function renderGameShell(container) {
   };
 
   const handleLaneTap = () => {
-    if (isPaused) {
+    if (isPaused || levelTransitionUntil > performance.now()) {
       return;
     }
 
@@ -989,11 +1019,19 @@ export function renderGameShell(container) {
     }
     comboStreak = state.lastZone === "miss" ? 0 : comboStreak + 1;
     hypeText = tappedHazard ? "Hazard! Skip red notes." : getHypeText(state.lastZone, comboStreak);
-    lastShopMessage = "";
+
+    const levelAdvanced = state.rainbowStageIndex > previousStage;
 
     if (state.hasWon) {
       nextBeatAt = null;
       stopCountdownRender();
+    } else if (levelAdvanced) {
+      beatPatternIndex = 0;
+      nextBeatAt = null;
+      stopCountdownRender();
+      levelTransitionUntil = performance.now() + LEVEL_TRANSITION_MS;
+      pendingLevelStageName = RAINBOW_LEVELS[state.rainbowStageIndex];
+      launchWinCelebration(26);
     } else {
       beatPatternIndex += 1;
       const beatsAhead = getPatternValueAt(beatPatternIndex);
@@ -1044,6 +1082,9 @@ export function renderGameShell(container) {
   };
 
   const handlePlayPauseToggle = () => {
+    if (levelTransitionUntil > performance.now()) {
+      return;
+    }
     if (nextBeatAt === null && !isPaused) {
       startRound();
       return;
@@ -1094,6 +1135,8 @@ export function renderGameShell(container) {
     isPaused = false;
     pauseHasActiveRound = false;
     resumeMusicAfterPause = false;
+    levelTransitionUntil = 0;
+    pendingLevelStageName = "";
     stopCountdownRender();
     render();
   });
