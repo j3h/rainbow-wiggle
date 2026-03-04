@@ -218,3 +218,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Target zone and note alignment were hard to read, especially on red-level lane backgrounds.
 - Decision: Use a fully-contained full-lane rainbow meter layer, center notes vertically, and make target/zone full-height with high-contrast outlines.
 - Consequences: More legible timing cues and cleaner visual alignment across all lane colors.
+
+## D-032 - Pulsing Start Callout Overlay
+- Date: 2026-03-03
+- Status: Accepted
+- Context: Start states and level starts needed stronger onboarding and clearer restart pacing.
+- Decision: Show pulsing lane callout text before first start and after each level transition; require tap-to-start instead of auto-start.
+- Consequences: Clearer readiness moment, better level pacing, and more playful presentation.

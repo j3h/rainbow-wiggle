@@ -22,6 +22,12 @@ const BOSS_PATTERN = [1, 1, 2, 1, 2, 1];
 const LEVEL_TRANSITION_MS = 1400;
 const WIGGLE_MS = 850;
 const FAST_TAP_SUPPRESS_MS = 450;
+const START_CALLOUTS = [
+  "Wiggle Warmup! Tap to start",
+  "Rainbow Groove! Tap to launch",
+  "Disco Ready? Tap to start",
+  "Butt Wiggle Time! Tap to go"
+];
 const SPRITE_SHEET_SRC = new URL("../assets/sprites/cat-dog-butt-wiggle-base.png", import.meta.url).href;
 const FALLBACK_SHEET_ASPECT = 1536 / 1024;
 const FRAME_INSET_X_PCT = 0.5;
@@ -120,6 +126,7 @@ export function renderGameShell(container) {
   let resumeMusicAfterPause = false;
   let levelTransitionUntil = 0;
   let pendingLevelStageName = "";
+  let laneCalloutText = START_CALLOUTS[0];
   let lastAmbientConfettiAt = 0;
   let spriteSheetAspect = FALLBACK_SHEET_ASPECT;
   let selectedDifficultyMode = "auto";
@@ -223,9 +230,11 @@ export function renderGameShell(container) {
     note.className = "beat-note";
     return note;
   });
+  const laneCallout = document.createElement("p");
+  laneCallout.className = "lane-callout";
   const beatZone = document.createElement("div");
   beatZone.className = "beat-zone";
-  beatLane.append(meterTrack, hitFxLayer, beatTarget, beatZone, ...noteEls);
+  beatLane.append(meterTrack, hitFxLayer, beatTarget, beatZone, ...noteEls, laneCallout);
   beatCue.append(beatLane, laneHud);
 
   const shop = document.createElement("section");
@@ -430,6 +439,11 @@ export function renderGameShell(container) {
 
   const getCurrentDifficulty = () => getDifficultySettings(selectedDifficultyMode, state.rainbowStageIndex);
   const isBossPhase = () => state.rainbowMeter >= BOSS_START_METER && !state.hasWon;
+  const buildLevelStartCallout = () => {
+    const base = START_CALLOUTS[state.rainbowStageIndex % START_CALLOUTS.length];
+    const levelName = RAINBOW_LEVELS[state.rainbowStageIndex];
+    return `${base} (${levelName})`;
+  };
 
   const getPatternValueAt = (index) => {
     const pattern = isBossPhase() ? BOSS_PATTERN : getCurrentDifficulty().tapPattern;
@@ -459,6 +473,7 @@ export function renderGameShell(container) {
     if (nextBeatAt !== null) {
       return;
     }
+    laneCalloutText = "";
     beatPatternIndex = 0;
     const firstBeatsAhead = getPatternValueAt(beatPatternIndex);
     const firstBeat = getNextAlignedBeatPerfTime(firstBeatsAhead);
@@ -833,11 +848,7 @@ export function renderGameShell(container) {
     if (levelTransitionUntil > 0 && now >= levelTransitionUntil && !state.hasWon && nextBeatAt === null) {
       levelTransitionUntil = 0;
       pendingLevelStageName = "";
-      const firstBeatsAhead = getPatternValueAt(beatPatternIndex);
-      const firstBeat = getNextAlignedBeatPerfTime(firstBeatsAhead);
-      beatDurationMs = Math.max(500, getBeatDurationMs() * firstBeatsAhead);
-      nextBeatAt = firstBeat || performance.now() + beatDurationMs;
-      startCountdownRender();
+      laneCalloutText = buildLevelStartCallout();
     }
 
     const currentBeatsAhead = getPatternValueAt(beatPatternIndex);
@@ -866,6 +877,11 @@ export function renderGameShell(container) {
     stats.textContent = String(state.score);
     stats.setAttribute("aria-label", `Score ${state.score}`);
     modeButton.textContent = getDifficultyLabel(selectedDifficultyMode, state.rainbowStageIndex);
+    laneCallout.textContent = laneCalloutText;
+    laneCallout.classList.toggle(
+      "is-visible",
+      nextBeatAt === null && !isPaused && !state.hasWon && Boolean(laneCalloutText)
+    );
     meterFill.style.width = `${state.rainbowMeter}%`;
     meterTrack.setAttribute("aria-valuenow", String(state.rainbowMeter));
     SHOP_ITEMS.forEach((item) => {
@@ -1058,6 +1074,7 @@ export function renderGameShell(container) {
       stopCountdownRender();
       levelTransitionUntil = performance.now() + LEVEL_TRANSITION_MS;
       pendingLevelStageName = RAINBOW_LEVELS[state.rainbowStageIndex];
+      laneCalloutText = `LEVEL UP! ${pendingLevelStageName} incoming...`;
       launchWinCelebration(26);
     } else {
       beatPatternIndex += 1;
@@ -1164,6 +1181,7 @@ export function renderGameShell(container) {
     resumeMusicAfterPause = false;
     levelTransitionUntil = 0;
     pendingLevelStageName = "";
+    laneCalloutText = START_CALLOUTS[0];
     lastAmbientConfettiAt = 0;
     stopCountdownRender();
     render();

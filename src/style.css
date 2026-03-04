@@ -360,6 +360,32 @@ body {
   box-shadow: 0 0 12px rgba(255, 75, 110, 0.84);
 }
 
+.lane-callout {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(0.96);
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: rgba(18, 30, 46, 0.76);
+  color: #ffffff;
+  font-size: clamp(0.78rem, 2vw, 1rem);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-align: center;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 8;
+}
+
+.lane-callout.is-visible {
+  opacity: 1;
+  animation: laneCalloutPulse 0.9s ease-in-out infinite alternate;
+}
+
 .beat-cue.is-window .beat-zone {
   background: rgba(255, 255, 255, 0.22);
   border-color: #ffffff;
@@ -1227,6 +1253,17 @@ body {
   to {
     transform: translateX(16px) rotate(3.5deg) scale(1.06);
     opacity: 1;
+  }
+}
+
+@keyframes laneCalloutPulse {
+  from {
+    transform: translate(-50%, -50%) scale(0.95);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.16);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1.02);
+    box-shadow: 0 0 0 6px rgba(255, 255, 255, 0);
   }
 }
 
