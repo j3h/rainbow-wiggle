@@ -239,3 +239,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Between-level pause created a natural break where players want to shop without multitasking during active notes.
 - Decision: Show shop panel only during level intermissions (and post-win), and hide it during active rhythm play.
 - Consequences: Cleaner gameplay focus, clearer pacing, and a dedicated decision moment for purchases between levels.
+
+## D-035 - Separate Global Mute From Music Toggle
+- Date: 2026-03-03
+- Status: Accepted
+- Context: Players need to quickly silence all sound without changing whether background music is logically enabled.
+- Decision: Keep `music` toggle for loop playback state and add a separate global `mute` control that affects both music and SFX via master gain.
+- Consequences: Clearer audio controls and easier family/device-volume management while preserving music state.

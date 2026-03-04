@@ -160,6 +160,16 @@ body {
   opacity: 0;
 }
 
+.mute-toggle {
+  font-size: 1rem;
+}
+
+.mute-toggle.is-on {
+  color: #a44d69;
+  border-color: #d7a6bb;
+  box-shadow: 0 4px 12px rgba(180, 88, 128, 0.22);
+}
+
 .subtitle,
 .stats,
 .feedback {

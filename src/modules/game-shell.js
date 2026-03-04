@@ -5,7 +5,9 @@ import {
   getBeatDurationMs,
   getNextAlignedBeatPerfTime,
   isDiscoLoopActive,
+  isMasterMuted,
   playDiscoJingle,
+  toggleMasterMuted,
   startDiscoLoop,
   toggleDiscoLoop
 } from "./disco-sfx.js";
@@ -267,6 +269,11 @@ export function renderGameShell(container) {
   musicButton.type = "button";
   musicButton.textContent = "♪";
 
+  const muteButton = document.createElement("button");
+  muteButton.className = "mute-toggle hud-toggle";
+  muteButton.type = "button";
+  muteButton.textContent = "🔈";
+
   const playAgainButton = document.createElement("button");
   playAgainButton.className = "action action-replay";
   playAgainButton.type = "button";
@@ -411,6 +418,15 @@ export function renderGameShell(container) {
     musicButton.setAttribute("aria-pressed", String(active));
     musicButton.setAttribute("aria-label", active ? "Turn music off" : "Turn music on");
     musicButton.title = active ? "Music on" : "Music off";
+  };
+
+  const updateMuteLabel = () => {
+    const muted = isMasterMuted();
+    muteButton.classList.toggle("is-on", muted);
+    muteButton.textContent = muted ? "🔇" : "🔈";
+    muteButton.setAttribute("aria-pressed", String(muted));
+    muteButton.setAttribute("aria-label", muted ? "Unmute all audio" : "Mute all audio");
+    muteButton.title = muted ? "Audio muted" : "Audio on";
   };
 
   const updatePlayPauseLabel = () => {
@@ -1234,6 +1250,11 @@ export function renderGameShell(container) {
     updateMusicLabel();
   });
 
+  muteButton.addEventListener("click", () => {
+    toggleMasterMuted();
+    updateMuteLabel();
+  });
+
   playAgainButton.addEventListener("click", () => {
     state = createInitialState({
       title: state.title,
@@ -1325,7 +1346,7 @@ export function renderGameShell(container) {
     });
   });
 
-  laneHud.append(stats, modeButton, playPauseButton, musicButton);
+  laneHud.append(stats, modeButton, playPauseButton, musicButton, muteButton);
   controls.append(playAgainButton);
   playPanel.append(spriteStage, beatCue, controls);
   sidePanel.append(shop);
@@ -1333,6 +1354,7 @@ export function renderGameShell(container) {
   shell.append(title, subtitle, shellBody);
   applySpriteTune();
   updateMusicLabel();
+  updateMuteLabel();
   if (debugSprites) {
     shell.append(buildSpriteDebugPanel());
   }

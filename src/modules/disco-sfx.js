@@ -3,6 +3,7 @@ let masterGain;
 let loopGain;
 let discoInterval = null;
 let discoEnabled = false;
+let masterMuted = false;
 let loopStartAudioTime = null;
 let loopStartPerfTime = null;
 let nextBarAudioTime = null;
@@ -12,6 +13,9 @@ const BEAT_SECONDS = 60 / BPM; // quarter note
 const BAR_SECONDS = BEAT_SECONDS * 8;
 
 function getAudioContext() {
+  if (typeof window === "undefined") {
+    return null;
+  }
   const Ctx = window.AudioContext || window.webkitAudioContext;
   if (!Ctx) {
     return null;
@@ -27,10 +31,20 @@ function getAudioContext() {
 function getMasterGain(ctx) {
   if (!masterGain) {
     masterGain = ctx.createGain();
-    masterGain.gain.value = 1;
+    masterGain.gain.value = masterMuted ? 0.0001 : 1;
     masterGain.connect(ctx.destination);
   }
   return masterGain;
+}
+
+function syncMasterMute(ctx) {
+  if (!ctx || !masterGain) {
+    return;
+  }
+  masterGain.gain.cancelScheduledValues(ctx.currentTime);
+  masterGain.gain.setValueAtTime(masterGain.gain.value || 0.0001, ctx.currentTime);
+  const target = masterMuted ? 0.0001 : 1;
+  masterGain.gain.exponentialRampToValueAtTime(target, ctx.currentTime + 0.03);
 }
 
 function getLoopGain(ctx) {
@@ -185,7 +199,8 @@ export function startDiscoLoop() {
     ctx.resume();
   }
 
-  getMasterGain(ctx).gain.setValueAtTime(1, ctx.currentTime);
+  getMasterGain(ctx);
+  syncMasterMute(ctx);
   getLoopGain(ctx).gain.setValueAtTime(1, ctx.currentTime);
 
   if (discoEnabled) {
@@ -238,4 +253,22 @@ export function toggleDiscoLoop() {
 
 export function isDiscoLoopActive() {
   return discoEnabled;
+}
+
+export function setMasterMuted(value) {
+  masterMuted = Boolean(value);
+  const ctx = getAudioContext();
+  if (ctx && ctx.state === "suspended" && !masterMuted) {
+    ctx.resume();
+  }
+  syncMasterMute(ctx);
+  return masterMuted;
+}
+
+export function toggleMasterMuted() {
+  return setMasterMuted(!masterMuted);
+}
+
+export function isMasterMuted() {
+  return masterMuted;
 }
