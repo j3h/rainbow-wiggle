@@ -211,3 +211,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Confetti Cannon unlock existed but felt too subtle.
 - Decision: Make Confetti Cannon emit bursts on `good/perfect` hits, large bursts on boss clear, and ambient pops during boss phases.
 - Consequences: Rare item now has visible, fun, high-impact payoff during normal play.
+
+## D-031 - Lane Readability + Contrast Pass
+- Date: 2026-03-03
+- Status: Accepted
+- Context: Target zone and note alignment were hard to read, especially on red-level lane backgrounds.
+- Decision: Use a fully-contained full-lane rainbow meter layer, center notes vertically, and make target/zone full-height with high-contrast outlines.
+- Consequences: More legible timing cues and cleaner visual alignment across all lane colors.
