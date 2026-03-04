@@ -246,6 +246,9 @@ export function renderGameShell(container) {
   const shopTitle = document.createElement("h2");
   shopTitle.className = "shop-title";
   shopTitle.textContent = "Rainbow Shop";
+  const shopHint = document.createElement("p");
+  shopHint.className = "shop-hint";
+  shopHint.textContent = "Shop appears between levels.";
   const shopList = document.createElement("div");
   shopList.className = "shop-list";
 
@@ -292,7 +295,7 @@ export function renderGameShell(container) {
     return button;
   });
   shopList.append(...shopButtons);
-  shop.append(shopTitle, shopList);
+  shop.append(shopTitle, shopHint, shopList);
 
   const applySpriteTune = () => {
     const sample = getFrameSample(spriteTune, 0);
@@ -478,6 +481,7 @@ export function renderGameShell(container) {
       return;
     }
     clearStickyStageBanner();
+    pendingLevelStageName = "";
     if (laneCalloutText) {
       showStageBanner(laneCalloutText, "info", 1000);
     }
@@ -889,8 +893,20 @@ export function renderGameShell(container) {
     const now = performance.now();
     if (levelTransitionUntil > 0 && now >= levelTransitionUntil && !state.hasWon && nextBeatAt === null) {
       levelTransitionUntil = 0;
-      pendingLevelStageName = "";
       laneCalloutText = buildLevelStartCallout();
+    }
+    const showShopInterstitial = state.hasWon || (!isPaused && nextBeatAt === null && Boolean(pendingLevelStageName));
+    shellBody.classList.toggle("has-shop-interstitial", showShopInterstitial);
+    sidePanel.hidden = !showShopInterstitial;
+    if (state.hasWon) {
+      shopTitle.textContent = "Victory Shop";
+      shopHint.textContent = "Try your unlocked effects, then tap Play Again.";
+    } else if (pendingLevelStageName) {
+      shopTitle.textContent = `Intermission Shop`;
+      shopHint.textContent = `Before ${pendingLevelStageName}: spend points on upgrades.`;
+    } else {
+      shopTitle.textContent = "Rainbow Shop";
+      shopHint.textContent = "Shop appears between levels.";
     }
 
     const currentBeatsAhead = getPatternValueAt(beatPatternIndex);

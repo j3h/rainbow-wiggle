@@ -13,6 +13,7 @@ Render the single-screen game UI and wire input, rhythm timing, and shop interac
 - Must render a lane-adjacent floating HUD with score, play/pause toggle, and music toggle.
 - Must include a difficulty mode toggle (`Auto/Chill/Party/Legend`) in the floating HUD.
 - Must allow toggling owned shop effects on/off without re-purchasing.
+- Must present the shop as an interstitial between levels (and after win), hidden during active rhythm play.
 - Must render and evaluate lane hazard notes (red notes should be skipped).
 - Must run a boss phase near end-of-level and grant boss-clear reward unlocks.
 - Must pause briefly with celebration messaging when advancing to the next rainbow level.

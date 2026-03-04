@@ -232,3 +232,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Temporary banners were good for momentary feedback, but persistent states like pause/win needed always-on visibility.
 - Decision: Keep temporary banners for short events and add sticky stage banners that remain until state changes (used for `Paused` and final win).
 - Consequences: Critical state remains obvious without reintroducing large persistent text blocks in the layout.
+
+## D-034 - Shop As Between-Level Interstitial
+- Date: 2026-03-03
+- Status: Accepted
+- Context: Between-level pause created a natural break where players want to shop without multitasking during active notes.
+- Decision: Show shop panel only during level intermissions (and post-win), and hide it during active rhythm play.
+- Consequences: Cleaner gameplay focus, clearer pacing, and a dedicated decision moment for purchases between levels.
