@@ -91,8 +91,9 @@ export function applyAction(state, action) {
   switch (action.type) {
     case "APPLY_JUDGMENT": {
       const zone = ["miss", "good", "perfect"].includes(action.zone) ? action.zone : "miss";
+      const meterScale = Number.isFinite(action.meterScale) ? clamp(action.meterScale, 0.2, 2) : 1;
       const nextScore = state.score + ZONE_EFFECTS[zone].score;
-      const rainbow = applyRainbowDelta(state, ZONE_EFFECTS[zone].meter);
+      const rainbow = applyRainbowDelta(state, Math.round(ZONE_EFFECTS[zone].meter * meterScale));
 
       return {
         ...state,

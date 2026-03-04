@@ -9,10 +9,10 @@ import {
   startDiscoLoop,
   toggleDiscoLoop
 } from "./disco-sfx.js";
+import { getDifficultyLabel, getDifficultySettings, getNextDifficultyMode } from "./difficulty.js";
 import { judgeTiming } from "./timing.js";
 
 const PREP_MS = 1200;
-const TAP_BEAT_PATTERN = [2, 3, 1, 2, 2, 1, 3, 2];
 const NOTE_PREVIEW_COUNT = 4;
 const LANE_START_PCT = 8;
 const LANE_TARGET_PCT = 90;
@@ -60,10 +60,6 @@ function clamp01(value) {
   return Math.min(1, Math.max(0, value));
 }
 
-function getPatternValue(index) {
-  return TAP_BEAT_PATTERN[index % TAP_BEAT_PATTERN.length];
-}
-
 function getFrameSample(spriteTune, frameIndex) {
   const frame = Math.max(0, Math.min(spriteTune.frames - 1, frameIndex));
   const sampleW = Math.max(0.5, spriteTune.frameW - FRAME_INSET_X_PCT * 2);
@@ -107,7 +103,7 @@ export function renderGameShell(container) {
 
   let state = createInitialState();
   let nextBeatAt = null;
-  let beatDurationMs = getBeatDurationMs() * getPatternValue(0);
+  let beatDurationMs = getBeatDurationMs() * 2;
   let beatPatternIndex = 0;
   let comboStreak = 0;
   let hypeText = "Ready to wiggle";
@@ -118,6 +114,7 @@ export function renderGameShell(container) {
   let pauseHasActiveRound = false;
   let resumeMusicAfterPause = false;
   let spriteSheetAspect = FALLBACK_SHEET_ASPECT;
+  let selectedDifficultyMode = "auto";
   const params = new URLSearchParams(window.location.search);
   const debugSprites = params.get("debugSprites") === "1";
   const debugInput = params.get("debugInput") === "1";
@@ -250,6 +247,11 @@ export function renderGameShell(container) {
   playPauseButton.type = "button";
   playPauseButton.textContent = "▶";
   playPauseButton.setAttribute("aria-label", "Start round");
+
+  const modeButton = document.createElement("button");
+  modeButton.className = "mode-toggle hud-toggle";
+  modeButton.type = "button";
+  modeButton.setAttribute("aria-label", "Change difficulty mode");
 
   beatLane.setAttribute("role", "button");
   beatLane.setAttribute("tabindex", "0");
@@ -404,6 +406,13 @@ export function renderGameShell(container) {
     playPauseButton.disabled = false;
   };
 
+  const getCurrentDifficulty = () => getDifficultySettings(selectedDifficultyMode, state.rainbowStageIndex);
+
+  const getPatternValueAt = (index) => {
+    const pattern = getCurrentDifficulty().tapPattern;
+    return pattern[index % pattern.length];
+  };
+
   const startRound = () => {
     if (!musicStarted) {
       startDiscoLoop();
@@ -415,7 +424,7 @@ export function renderGameShell(container) {
       return;
     }
     beatPatternIndex = 0;
-    const firstBeatsAhead = getPatternValue(beatPatternIndex);
+    const firstBeatsAhead = getPatternValueAt(beatPatternIndex);
     const firstBeat = getNextAlignedBeatPerfTime(firstBeatsAhead);
     if (firstBeat) {
       nextBeatAt = firstBeat;
@@ -773,7 +782,7 @@ export function renderGameShell(container) {
 
   const render = () => {
     const now = performance.now();
-    const currentBeatsAhead = getPatternValue(beatPatternIndex);
+    const currentBeatsAhead = getPatternValueAt(beatPatternIndex);
     const beatIntervalMs = getBeatDurationMs() * currentBeatsAhead;
     if (!isPaused && nextBeatAt !== null && beatIntervalMs > 0) {
       while (nextBeatAt < now - 200) {
@@ -786,9 +795,11 @@ export function renderGameShell(container) {
     shell.dataset.energy = String(getEnergyLevel(state.rainbowMeter));
     const levelName = RAINBOW_LEVELS[state.rainbowStageIndex];
     shell.dataset.level = levelName.toLowerCase();
+    shell.dataset.difficulty = getCurrentDifficulty().tier;
     maxScoreSeen = Math.max(maxScoreSeen, state.score);
     stats.textContent = String(state.score);
     stats.setAttribute("aria-label", `Score ${state.score}`);
+    modeButton.textContent = getDifficultyLabel(selectedDifficultyMode, state.rainbowStageIndex);
     meterFill.style.width = `${state.rainbowMeter}%`;
     meterTrack.setAttribute("aria-valuenow", String(state.rainbowMeter));
     SHOP_ITEMS.forEach((item) => {
@@ -872,13 +883,13 @@ export function renderGameShell(container) {
       noteEls.forEach((note, index) => {
         let noteAt = nextBeatAt;
         for (let step = 0; step < index; step += 1) {
-          const beatsAhead = getPatternValue(beatPatternIndex + step + 1);
+          const beatsAhead = getPatternValueAt(beatPatternIndex + step + 1);
           noteAt += getBeatDurationMs() * beatsAhead;
         }
         const delta = noteAt - now;
         let lookAhead = 0;
         for (let step = 0; step < NOTE_PREVIEW_COUNT; step += 1) {
-          lookAhead += getBeatDurationMs() * getPatternValue(beatPatternIndex + step);
+          lookAhead += getBeatDurationMs() * getPatternValueAt(beatPatternIndex + step);
         }
         const normalized = clamp01(1 - delta / lookAhead);
         const rawLanePosition = LANE_START_PCT + normalized * laneSpan;
@@ -908,11 +919,12 @@ export function renderGameShell(container) {
 
     const deltaMs = performance.now() - nextBeatAt;
     const hadWonBefore = state.hasWon;
+    const difficulty = getCurrentDifficulty();
     const zone = judgeTiming(deltaMs);
     playDiscoJingle(zone);
     playWiggle(zone);
     launchBurst(zone);
-    state = applyAction(state, { type: "APPLY_JUDGMENT", zone });
+    state = applyAction(state, { type: "APPLY_JUDGMENT", zone, meterScale: difficulty.meterScale });
     if (!hadWonBefore && state.hasWon) {
       launchWinCelebration();
     }
@@ -925,7 +937,7 @@ export function renderGameShell(container) {
       stopCountdownRender();
     } else {
       beatPatternIndex += 1;
-      const beatsAhead = getPatternValue(beatPatternIndex);
+      const beatsAhead = getPatternValueAt(beatPatternIndex);
       beatDurationMs = Math.max(500, getBeatDurationMs() * beatsAhead);
       const aligned = getNextAlignedBeatPerfTime(beatsAhead);
       if (aligned) {
@@ -961,7 +973,7 @@ export function renderGameShell(container) {
       resumeMusicAfterPause = false;
     }
     if (pauseHasActiveRound && !state.hasWon) {
-      const beatsAhead = getPatternValue(beatPatternIndex);
+      const beatsAhead = getPatternValueAt(beatPatternIndex);
       beatDurationMs = Math.max(500, getBeatDurationMs() * beatsAhead);
       const aligned = getNextAlignedBeatPerfTime(beatsAhead);
       nextBeatAt = aligned || performance.now() + beatDurationMs;
@@ -981,6 +993,14 @@ export function renderGameShell(container) {
   };
 
   bindFastTap(beatLane, handleLaneTap);
+  modeButton.addEventListener("click", () => {
+    selectedDifficultyMode = getNextDifficultyMode(selectedDifficultyMode);
+    if (nextBeatAt !== null && !isPaused) {
+      const beatsAhead = getPatternValueAt(beatPatternIndex);
+      beatDurationMs = Math.max(500, getBeatDurationMs() * beatsAhead);
+    }
+    render();
+  });
   if (debugInput) {
     ["pointerdown", "click"].forEach((type) => {
       beatLane.addEventListener(type, (event) => logInputEvent("beatLane", "capture", event), true);
@@ -1084,7 +1104,7 @@ export function renderGameShell(container) {
     });
   });
 
-  laneHud.append(stats, playPauseButton, musicButton);
+  laneHud.append(stats, modeButton, playPauseButton, musicButton);
   controls.append(playAgainButton);
   playPanel.append(spriteStage, beatCue, feedback, hype, controls);
   sidePanel.append(shop);

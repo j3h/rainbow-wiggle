@@ -29,6 +29,14 @@ test("APPLY_JUDGMENT increments score and meter immutably", () => {
   assert.equal(after.lastZone, "good");
 });
 
+test("APPLY_JUDGMENT supports meter scaling for longer levels", () => {
+  const before = createInitialState();
+  const after = applyAction(before, { type: "APPLY_JUDGMENT", zone: "perfect", meterScale: 0.65 });
+
+  assert.equal(after.score, 3);
+  assert.equal(after.rainbowMeter, 8);
+});
+
 test("rainbow progression advances through ordered levels and wins at Red", () => {
   let state = createInitialState({ rainbowStageIndex: RAINBOW_LEVELS.length - 2, rainbowMeter: 90 });
   state = applyAction(state, { type: "APPLY_JUDGMENT", zone: "perfect" });

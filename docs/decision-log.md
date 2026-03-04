@@ -176,3 +176,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Party laser effect looked abstract and did not read clearly as laser beams.
 - Decision: Use sharper beam lines, visible emitter heads, and wider sweep motion for the party-laser layer.
 - Consequences: Effect is more legible and thematically aligned with "disco lasers".
+
+## D-026 - Dual Difficulty Model (Auto + Selectable)
+- Date: 2026-03-03
+- Status: Accepted
+- Context: Creative direction requested both automatic ramping and player-selectable challenge options.
+- Decision: Add difficulty modes `Auto`, `Chill`, `Party`, and `Legend`; auto mode escalates by rainbow stage and harder tiers reduce meter gains per hit.
+- Consequences: Levels take longer (about a minute target) with controllable challenge and minimal extra UI complexity.
