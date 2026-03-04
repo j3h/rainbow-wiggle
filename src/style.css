@@ -595,7 +595,7 @@ body {
   justify-self: center;
   border-radius: 14px;
   border: 2px solid #ebddc4;
-  background-image: url("/src/assets/sprites/cat-dog-butt-wiggle-base.png");
+  background-image: url("./assets/sprites/cat-dog-butt-wiggle-base.png");
   background-repeat: no-repeat;
   background-size: calc(var(--sprite-zoom, 2.2) * 100%) auto;
   background-position: var(--sprite-bx, var(--sprite-x, 50%)) var(--sprite-by, var(--sprite-y, 50%));
