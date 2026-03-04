@@ -21,6 +21,7 @@ test("getDifficultySettings returns expected pattern and meter scale", () => {
 
   assert.equal(chill.meterScale, 1);
   assert.equal(legend.meterScale, 0.65);
+  assert.equal(chill.hazardRate < legend.hazardRate, true);
   assert.equal(Array.isArray(chill.tapPattern), true);
   assert.equal(chill.tapPattern.length > 0, true);
 });

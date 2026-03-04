@@ -10,6 +10,12 @@ const METER_SCALES = {
   legend: 0.65
 };
 
+const HAZARD_RATES = {
+  chill: 0.06,
+  party: 0.12,
+  legend: 0.18
+};
+
 export const DIFFICULTY_MODES = ["auto", "chill", "party", "legend"];
 
 export function resolveDifficultyTier(mode, rainbowStageIndex) {
@@ -32,7 +38,8 @@ export function getDifficultySettings(mode, rainbowStageIndex) {
   return {
     tier,
     tapPattern: PATTERNS[tier],
-    meterScale: METER_SCALES[tier]
+    meterScale: METER_SCALES[tier],
+    hazardRate: HAZARD_RATES[tier]
   };
 }
 

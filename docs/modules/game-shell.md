@@ -13,6 +13,7 @@ Render the single-screen game UI and wire input, rhythm timing, and shop interac
 - Must render a lane-adjacent floating HUD with score, play/pause toggle, and music toggle.
 - Must include a difficulty mode toggle (`Auto/Chill/Party/Legend`) in the floating HUD.
 - Must allow toggling owned shop effects on/off without re-purchasing.
+- Must render and evaluate lane hazard notes (red notes should be skipped).
 - Must keep lane timing cues and note previews in sync with the active rhythm schedule.
 - Must support tap/click and keyboard lane input (`Enter` / `Space`) for play actions.
 - Must provide `Pause` / `Resume`, `Play Again`, and music toggle controls.

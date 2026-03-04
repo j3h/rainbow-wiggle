@@ -413,6 +413,15 @@ export function renderGameShell(container) {
     return pattern[index % pattern.length];
   };
 
+  const isHazardNoteAt = (index) => {
+    const { hazardRate } = getCurrentDifficulty();
+    if (hazardRate <= 0) {
+      return false;
+    }
+    const hash = (index * 37 + state.rainbowStageIndex * 17 + 11) % 100;
+    return hash < Math.round(hazardRate * 100) && index % 2 === 1;
+  };
+
   const startRound = () => {
     if (!musicStarted) {
       startDiscoLoop();
@@ -897,6 +906,7 @@ export function renderGameShell(container) {
         note.style.left = `${lanePosition.toFixed(2)}%`;
         note.style.opacity = delta < -220 ? "0" : "1";
         note.classList.toggle("is-next", index === 0);
+        note.classList.toggle("is-hazard", isHazardNoteAt(beatPatternIndex + index));
         previousNotePos = lanePosition;
       });
       hype.textContent = "Hit orange notes when they enter the target zone!";
@@ -920,7 +930,11 @@ export function renderGameShell(container) {
     const deltaMs = performance.now() - nextBeatAt;
     const hadWonBefore = state.hasWon;
     const difficulty = getCurrentDifficulty();
-    const zone = judgeTiming(deltaMs);
+    let zone = judgeTiming(deltaMs);
+    const tappedHazard = isHazardNoteAt(beatPatternIndex) && zone !== "miss";
+    if (tappedHazard) {
+      zone = "miss";
+    }
     playDiscoJingle(zone);
     playWiggle(zone);
     launchBurst(zone);
@@ -929,7 +943,7 @@ export function renderGameShell(container) {
       launchWinCelebration();
     }
     comboStreak = state.lastZone === "miss" ? 0 : comboStreak + 1;
-    hypeText = getHypeText(state.lastZone, comboStreak);
+    hypeText = tappedHazard ? "Hazard! Skip red notes." : getHypeText(state.lastZone, comboStreak);
     lastShopMessage = "";
 
     if (state.hasWon) {
