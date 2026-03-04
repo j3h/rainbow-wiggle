@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node scripts/serve.mjs",
     "test": "node --test",
-    "share-url": "./scripts/share-url.sh"
+    "share-url": "./scripts/share-url.sh",
+    "push": "./scripts/push.sh"
   },
   "engines": {
     "node": ">=20"

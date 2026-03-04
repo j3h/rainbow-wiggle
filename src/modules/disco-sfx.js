@@ -1,5 +1,6 @@
 let audioContext;
 let masterGain;
+let loopGain;
 let discoInterval = null;
 let discoEnabled = false;
 let loopStartAudioTime = null;
@@ -32,7 +33,16 @@ function getMasterGain(ctx) {
   return masterGain;
 }
 
-function playChipNote(ctx, startTime, duration, frequency, gainValue, type = "square") {
+function getLoopGain(ctx) {
+  if (!loopGain) {
+    loopGain = ctx.createGain();
+    loopGain.gain.value = 1;
+    loopGain.connect(getMasterGain(ctx));
+  }
+  return loopGain;
+}
+
+function playChipNote(ctx, target, startTime, duration, frequency, gainValue, type = "square") {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
 
@@ -44,13 +54,14 @@ function playChipNote(ctx, startTime, duration, frequency, gainValue, type = "sq
   gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
 
   osc.connect(gain);
-  gain.connect(getMasterGain(ctx));
+  gain.connect(target);
 
   osc.start(startTime);
   osc.stop(startTime + duration + 0.02);
 }
 
 function scheduleDiscoBar(ctx, barStart) {
+  const loopTarget = getLoopGain(ctx);
   const sixteenth = BEAT_SECONDS / 4;
   const leadPattern = [
     659, 0, 784, 0, 659, 0, 988, 0, 880, 0, 784, 0, 659, 0, 587, 0,
@@ -63,18 +74,18 @@ function scheduleDiscoBar(ctx, barStart) {
       return;
     }
 
-    playChipNote(ctx, barStart + index * sixteenth, sixteenth * 0.75, freq, 0.02, "square");
+    playChipNote(ctx, loopTarget, barStart + index * sixteenth, sixteenth * 0.75, freq, 0.02, "square");
   });
 
   bassPattern.forEach((freq, index) => {
     const time = barStart + index * BEAT_SECONDS;
-    playChipNote(ctx, time, BEAT_SECONDS * 0.7, freq, 0.03, "triangle");
-    playChipNote(ctx, time + BEAT_SECONDS * 0.5, BEAT_SECONDS * 0.18, freq * 2, 0.012, "square");
+    playChipNote(ctx, loopTarget, time, BEAT_SECONDS * 0.7, freq, 0.03, "triangle");
+    playChipNote(ctx, loopTarget, time + BEAT_SECONDS * 0.5, BEAT_SECONDS * 0.18, freq * 2, 0.012, "square");
   });
 
   for (let index = 0; index < 32; index += 1) {
     const t = barStart + index * sixteenth;
-    playChipNote(ctx, t, 0.02, 3200, index % 2 === 0 ? 0.004 : 0.0025, "square");
+    playChipNote(ctx, loopTarget, t, 0.02, 3200, index % 2 === 0 ? 0.004 : 0.0025, "square");
   }
 }
 
@@ -133,9 +144,10 @@ export function playDiscoJingle(zone) {
 
   const tones = tonesByZone[zone] || tonesByZone.miss;
   const now = ctx.currentTime;
+  const sfxTarget = getMasterGain(ctx);
 
   tones.forEach((tone, index) => {
-    playChipNote(ctx, now + index * 0.08, 0.11, tone, 0.06, "triangle");
+    playChipNote(ctx, sfxTarget, now + index * 0.08, 0.11, tone, 0.06, "triangle");
   });
 }
 
@@ -154,7 +166,7 @@ export function playCountIn(delayMs = 1200) {
   const step = beatDelayS / 3;
 
   const click = (time, frequency, gainValue) => {
-    playChipNote(ctx, time, 0.09, frequency, gainValue, "square");
+    playChipNote(ctx, getMasterGain(ctx), time, 0.09, frequency, gainValue, "square");
   };
 
   click(now + 0 * step, 900, 0.03);
@@ -174,6 +186,7 @@ export function startDiscoLoop() {
   }
 
   getMasterGain(ctx).gain.setValueAtTime(1, ctx.currentTime);
+  getLoopGain(ctx).gain.setValueAtTime(1, ctx.currentTime);
 
   if (discoEnabled) {
     return true;
@@ -190,19 +203,29 @@ export function startDiscoLoop() {
 
 export function stopDiscoLoop() {
   discoEnabled = false;
+  nextBarAudioTime = null;
+  loopStartAudioTime = null;
+  loopStartPerfTime = null;
   if (discoInterval !== null) {
     clearInterval(discoInterval);
     discoInterval = null;
   }
 
   const ctx = getAudioContext();
-  if (!ctx || !masterGain) {
+  if (!ctx) {
     return;
   }
 
-  masterGain.gain.cancelScheduledValues(ctx.currentTime);
-  masterGain.gain.setValueAtTime(Math.max(0.0001, masterGain.gain.value || 1), ctx.currentTime);
-  masterGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.04);
+  if (loopGain) {
+    loopGain.gain.cancelScheduledValues(ctx.currentTime);
+    loopGain.gain.setValueAtTime(Math.max(0.0001, loopGain.gain.value || 1), ctx.currentTime);
+    loopGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.04);
+    const staleLoopGain = loopGain;
+    loopGain = null;
+    setTimeout(() => {
+      staleLoopGain.disconnect();
+    }, 60);
+  }
 }
 
 export function toggleDiscoLoop() {

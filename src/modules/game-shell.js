@@ -18,6 +18,7 @@ const LANE_START_PCT = 8;
 const LANE_TARGET_PCT = 90;
 const MIN_NOTE_GAP_PCT = 10;
 const WIGGLE_MS = 850;
+const FAST_TAP_SUPPRESS_MS = 450;
 const SPRITE_SHEET_SRC = new URL("../assets/sprites/cat-dog-butt-wiggle-base.png", import.meta.url).href;
 const FALLBACK_SHEET_ASPECT = 1536 / 1024;
 const FRAME_INSET_X_PCT = 0.5;
@@ -119,6 +120,7 @@ export function renderGameShell(container) {
   let spriteSheetAspect = FALLBACK_SHEET_ASPECT;
   const params = new URLSearchParams(window.location.search);
   const debugSprites = params.get("debugSprites") === "1";
+  const debugInput = params.get("debugInput") === "1";
   const spriteTune = { ...DEFAULT_SPRITE_TUNE };
 
   const shell = document.createElement("section");
@@ -290,6 +292,55 @@ export function renderGameShell(container) {
   let wiggleTimeout = null;
   let frameTimer = null;
   let musicStarted = false;
+  let suppressPlayPauseClickUntil = 0;
+
+  const bindFastTap = (element, handler) => {
+    let suppressClickUntil = 0;
+
+    element.addEventListener("pointerdown", (event) => {
+      if (!event.isPrimary || event.pointerType === "mouse") {
+        return;
+      }
+      event.preventDefault();
+      suppressClickUntil = performance.now() + FAST_TAP_SUPPRESS_MS;
+      handler();
+    });
+
+    element.addEventListener("click", (event) => {
+      if (performance.now() < suppressClickUntil) {
+        event.preventDefault();
+        return;
+      }
+      handler();
+    });
+  };
+
+  const isPointInElement = (element, clientX, clientY) => {
+    const rect = element.getBoundingClientRect();
+    return clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
+  };
+
+  const describeNode = (node) => {
+    if (!(node instanceof Element)) {
+      return String(node);
+    }
+    const tag = node.tagName.toLowerCase();
+    const id = node.id ? `#${node.id}` : "";
+    const classes = node.classList.length > 0 ? `.${Array.from(node.classList).join(".")}` : "";
+    return `${tag}${id}${classes}`;
+  };
+
+  const logInputEvent = (label, phase, event) => {
+    if (!debugInput) {
+      return;
+    }
+    const path = event.composedPath().slice(0, 6).map(describeNode).join(" > ");
+    const x = Number.isFinite(event.clientX) ? Math.round(event.clientX) : "-";
+    const y = Number.isFinite(event.clientY) ? Math.round(event.clientY) : "-";
+    console.log(
+      `[input-debug] ${label} ${phase} type=${event.type} x=${x} y=${y} target=${describeNode(event.target)} current=${describeNode(event.currentTarget)} path=${path}`
+    );
+  };
 
   const setFrame = (frameIndex) => {
     const sample = getFrameSample(spriteTune, frameIndex);
@@ -929,7 +980,13 @@ export function renderGameShell(container) {
     handlePauseToggle();
   };
 
-  beatLane.addEventListener("click", handleLaneTap);
+  bindFastTap(beatLane, handleLaneTap);
+  if (debugInput) {
+    ["pointerdown", "click"].forEach((type) => {
+      beatLane.addEventListener(type, (event) => logInputEvent("beatLane", "capture", event), true);
+      beatLane.addEventListener(type, (event) => logInputEvent("beatLane", "bubble", event));
+    });
+  }
   beatLane.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -962,10 +1019,50 @@ export function renderGameShell(container) {
     render();
   });
 
-  playPauseButton.addEventListener("click", handlePlayPauseToggle);
+  document.addEventListener(
+    "pointerdown",
+    (event) => {
+      logInputEvent("document", "capture", event);
+      if (!event.isPrimary || event.button !== 0 || playPauseButton.disabled) {
+        return;
+      }
+      if (!isPointInElement(playPauseButton, event.clientX, event.clientY)) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      suppressPlayPauseClickUntil = performance.now() + FAST_TAP_SUPPRESS_MS;
+      handlePlayPauseToggle();
+    },
+    true
+  );
+
+  if (debugInput) {
+    ["pointerdown", "click"].forEach((type) => {
+      document.addEventListener(type, (event) => logInputEvent("document", "bubble", event));
+      playPauseButton.addEventListener(type, (event) => logInputEvent("playPause", "capture", event), true);
+      playPauseButton.addEventListener(type, (event) => logInputEvent("playPause", "bubble", event));
+      shopList.addEventListener(type, (event) => logInputEvent("shopList", "capture", event), true);
+      shopList.addEventListener(type, (event) => logInputEvent("shopList", "bubble", event));
+    });
+  }
+
+  playPauseButton.addEventListener("click", (event) => {
+    if (performance.now() < suppressPlayPauseClickUntil) {
+      event.preventDefault();
+      return;
+    }
+    handlePlayPauseToggle();
+  });
 
   shopButtons.forEach((button, index) => {
     const item = SHOP_ITEMS[index];
+    if (debugInput) {
+      ["pointerdown", "click"].forEach((type) => {
+        button.addEventListener(type, (event) => logInputEvent(`shopButton:${item.id}`, "capture", event), true);
+        button.addEventListener(type, (event) => logInputEvent(`shopButton:${item.id}`, "bubble", event));
+      });
+    }
     button.addEventListener("click", () => {
       if (state.ownedItems.includes(item.id)) {
         state = applyAction(state, { type: "TOGGLE_ITEM", itemId: item.id });
