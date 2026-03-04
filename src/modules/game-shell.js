@@ -34,7 +34,7 @@ const SHOP_ITEMS = [
   { id: "disco-ball", name: "Disco Ball", cost: 44, effect: "Spinning disco ball over the dance floor" },
   { id: "unicorn-crown", name: "Unicorn Crown", cost: 50, effect: "Legend crown sparkles for both dancers" },
   { id: "starlight-fog", name: "Starlight Fog", cost: 72, effect: "Rare glow haze", unlockBossClears: 1 },
-  { id: "confetti-cannon", name: "Confetti Cannon", cost: 96, effect: "Rare mega party bursts", unlockBossClears: 3 }
+  { id: "confetti-cannon", name: "Confetti Cannon", cost: 96, effect: "Rare confetti blasts on perfect + boss", unlockBossClears: 3 }
 ];
 const DEFAULT_SPRITE_TUNE = {
   zoom: 4,
@@ -120,6 +120,7 @@ export function renderGameShell(container) {
   let resumeMusicAfterPause = false;
   let levelTransitionUntil = 0;
   let pendingLevelStageName = "";
+  let lastAmbientConfettiAt = 0;
   let spriteSheetAspect = FALLBACK_SHEET_ASPECT;
   let selectedDifficultyMode = "auto";
   let bossClearCount = 0;
@@ -472,18 +473,22 @@ export function renderGameShell(container) {
     render();
   };
 
-  const launchWinCelebration = (count = 60) => {
+  const launchConfettiBurst = (count, driftRange = 80, fallMin = 1.6, fallRange = 1.2) => {
     for (let index = 0; index < count; index += 1) {
       const piece = document.createElement("span");
       piece.className = "win-confetti";
       piece.style.left = `${Math.random() * 100}%`;
-      piece.style.setProperty("--drift-x", `${-40 + Math.random() * 80}px`);
-      piece.style.setProperty("--fall-time", `${1.6 + Math.random() * 1.2}s`);
+      piece.style.setProperty("--drift-x", `${-driftRange * 0.5 + Math.random() * driftRange}px`);
+      piece.style.setProperty("--fall-time", `${fallMin + Math.random() * fallRange}s`);
       piece.style.setProperty("--delay", `${Math.random() * 0.35}s`);
       piece.style.setProperty("--hue", `${Math.floor(Math.random() * 360)}deg`);
       winEffectsLayer.append(piece);
       setTimeout(() => piece.remove(), 3400);
     }
+  };
+
+  const launchWinCelebration = (count = 60) => {
+    launchConfettiBurst(count);
   };
 
   const launchBurst = (zone) => {
@@ -530,6 +535,14 @@ export function renderGameShell(container) {
       puff.style.setProperty("--drift-y", `${-26 - Math.random() * 28}px`);
       burstLayer.append(puff);
       setTimeout(() => puff.remove(), 640);
+    }
+
+    if (state.enabledItems.includes("confetti-cannon")) {
+      if (zone === "perfect") {
+        launchConfettiBurst(14, 110, 1.3, 0.9);
+      } else if (zone === "good") {
+        launchConfettiBurst(7, 70, 1.4, 0.8);
+      }
     }
   };
 
@@ -871,6 +884,17 @@ export function renderGameShell(container) {
       guestMascot.textContent = unlockedCharacters[unlockedCharacters.length - 1];
     }
 
+    if (
+      isBossPhase() &&
+      nextBeatAt !== null &&
+      !isPaused &&
+      state.enabledItems.includes("confetti-cannon") &&
+      now - lastAmbientConfettiAt > 1300
+    ) {
+      lastAmbientConfettiAt = now;
+      launchConfettiBurst(6, 60, 1.2, 0.7);
+    }
+
     SHOP_ITEMS.forEach((item, index) => {
       const owned = state.ownedItems.includes(item.id);
       const enabled = state.enabledItems.includes(item.id);
@@ -1013,6 +1037,9 @@ export function renderGameShell(container) {
         parts.push(`New character: ${unlockedCharacters[unlockedCharacters.length - 1]}`);
       }
       lastShopMessage = parts.join(" ");
+      if (state.enabledItems.includes("confetti-cannon")) {
+        launchConfettiBurst(44, 140, 1.5, 1.0);
+      }
     }
     if (!hadWonBefore && state.hasWon) {
       launchWinCelebration();
@@ -1137,6 +1164,7 @@ export function renderGameShell(container) {
     resumeMusicAfterPause = false;
     levelTransitionUntil = 0;
     pendingLevelStageName = "";
+    lastAmbientConfettiAt = 0;
     stopCountdownRender();
     render();
   });

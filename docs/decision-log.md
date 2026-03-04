@@ -204,3 +204,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Level transitions felt abrupt when note flow reset at stage boundaries.
 - Decision: Insert a short level-up transition pause with celebration messaging before next level note flow starts.
 - Consequences: Better pacing readability and stronger reward feel between levels.
+
+## D-030 - Confetti Cannon Active Gameplay Effect
+- Date: 2026-03-03
+- Status: Accepted
+- Context: Confetti Cannon unlock existed but felt too subtle.
+- Decision: Make Confetti Cannon emit bursts on `good/perfect` hits, large bursts on boss clear, and ambient pops during boss phases.
+- Consequences: Rare item now has visible, fun, high-impact payoff during normal play.
