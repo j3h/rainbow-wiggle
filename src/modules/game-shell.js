@@ -804,12 +804,19 @@ export function renderGameShell(container) {
   const render = () => {
     const now = performance.now();
     const currentBeatsAhead = getPatternValueAt(beatPatternIndex);
-    const beatIntervalMs = getBeatDurationMs() * currentBeatsAhead;
-    if (!isPaused && nextBeatAt !== null && beatIntervalMs > 0) {
+    if (!isPaused && nextBeatAt !== null) {
+      beatDurationMs = getBeatDurationMs() * currentBeatsAhead;
       while (nextBeatAt < now - 200) {
-        nextBeatAt += beatIntervalMs;
+        const skippedHazard = isHazardNoteAt(beatPatternIndex);
+        beatPatternIndex += 1;
+        const beatsAhead = getPatternValueAt(beatPatternIndex);
+        const stepMs = getBeatDurationMs() * beatsAhead;
+        nextBeatAt += stepMs;
+        beatDurationMs = stepMs;
+        if (skippedHazard) {
+          hypeText = "Nice dodge! Keep skipping red notes.";
+        }
       }
-      beatDurationMs = beatIntervalMs;
     }
 
     title.textContent = state.title;
