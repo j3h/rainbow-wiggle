@@ -244,7 +244,7 @@ export function renderGameShell(container) {
   beatCue.append(beatLane, laneHud);
 
   const shop = document.createElement("section");
-  shop.className = "shop";
+  shop.className = "shop shop-overlay";
   const shopTitle = document.createElement("h2");
   shopTitle.className = "shop-title";
   shopTitle.textContent = "Rainbow Shop";
@@ -261,8 +261,6 @@ export function renderGameShell(container) {
   shellBody.className = "shell-body";
   const playPanel = document.createElement("section");
   playPanel.className = "play-panel";
-  const sidePanel = document.createElement("aside");
-  sidePanel.className = "side-panel";
 
   const musicButton = document.createElement("button");
   musicButton.className = "music-toggle hud-toggle";
@@ -912,8 +910,8 @@ export function renderGameShell(container) {
       laneCalloutText = buildLevelStartCallout();
     }
     const showShopInterstitial = state.hasWon || (!isPaused && nextBeatAt === null && Boolean(pendingLevelStageName));
-    shellBody.classList.toggle("has-shop-interstitial", showShopInterstitial);
-    sidePanel.hidden = !showShopInterstitial;
+    shop.classList.toggle("is-visible", showShopInterstitial);
+    shop.setAttribute("aria-hidden", String(!showShopInterstitial));
     if (state.hasWon) {
       shopTitle.textContent = "Victory Shop";
       shopHint.textContent = "Try your unlocked effects, then tap Play Again.";
@@ -1348,9 +1346,8 @@ export function renderGameShell(container) {
 
   laneHud.append(stats, modeButton, playPauseButton, musicButton, muteButton);
   controls.append(playAgainButton);
-  playPanel.append(spriteStage, beatCue, controls);
-  sidePanel.append(shop);
-  shellBody.append(playPanel, sidePanel);
+  playPanel.append(spriteStage, beatCue, controls, shop);
+  shellBody.append(playPanel);
   shell.append(title, subtitle, shellBody);
   applySpriteTune();
   updateMusicLabel();

@@ -246,3 +246,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Players need to quickly silence all sound without changing whether background music is logically enabled.
 - Decision: Keep `music` toggle for loop playback state and add a separate global `mute` control that affects both music and SFX via master gain.
 - Consequences: Clearer audio controls and easier family/device-volume management while preserving music state.
+
+## D-036 - Shop Interstitial Uses Overlay (No Lane Reflow)
+- Date: 2026-03-03
+- Status: Accepted
+- Context: Showing/hiding the shop by changing page layout changed lane size and disrupted rhythm feel.
+- Decision: Keep interstitial timing but render the shop as an absolute overlay above the play area.
+- Consequences: Lane geometry stays stable across gameplay/intermissions while preserving between-level shopping flow.
