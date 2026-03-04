@@ -128,6 +128,8 @@ export function renderGameShell(container) {
   let resumeMusicAfterPause = false;
   let levelTransitionUntil = 0;
   let pendingLevelStageName = "";
+  let activeShopInterstitialKey = "";
+  let shopInterstitialDismissed = false;
   let laneCalloutText = START_CALLOUTS[0];
   let lastAmbientConfettiAt = 0;
   let stickyStageBanner = null;
@@ -248,6 +250,13 @@ export function renderGameShell(container) {
   const shopTitle = document.createElement("h2");
   shopTitle.className = "shop-title";
   shopTitle.textContent = "Rainbow Shop";
+  const shopHeader = document.createElement("div");
+  shopHeader.className = "shop-header";
+  const shopCloseButton = document.createElement("button");
+  shopCloseButton.className = "shop-close";
+  shopCloseButton.type = "button";
+  shopCloseButton.textContent = "✕";
+  shopCloseButton.setAttribute("aria-label", "Close shop overlay");
   const shopHint = document.createElement("p");
   shopHint.className = "shop-hint";
   shopHint.textContent = "Shop appears between levels.";
@@ -300,7 +309,8 @@ export function renderGameShell(container) {
     return button;
   });
   shopList.append(...shopButtons);
-  shop.append(shopTitle, shopHint, shopList);
+  shopHeader.append(shopTitle, shopCloseButton);
+  shop.append(shopHeader, shopHint, shopList);
 
   const applySpriteTune = () => {
     const sample = getFrameSample(spriteTune, 0);
@@ -909,9 +919,21 @@ export function renderGameShell(container) {
       levelTransitionUntil = 0;
       laneCalloutText = buildLevelStartCallout();
     }
-    const showShopInterstitial = state.hasWon || (!isPaused && nextBeatAt === null && Boolean(pendingLevelStageName));
+    const isIntermissionShop = !isPaused && nextBeatAt === null && Boolean(pendingLevelStageName);
+    const shouldShowShopInterstitial = state.hasWon || isIntermissionShop;
+    const shopInterstitialKey = state.hasWon
+      ? `win-${state.rainbowStageIndex}`
+      : pendingLevelStageName
+        ? `level-${state.rainbowStageIndex}-${pendingLevelStageName}`
+        : "";
+    if (shopInterstitialKey !== activeShopInterstitialKey) {
+      activeShopInterstitialKey = shopInterstitialKey;
+      shopInterstitialDismissed = false;
+    }
+    const showShopInterstitial = shouldShowShopInterstitial && !shopInterstitialDismissed;
     shop.classList.toggle("is-visible", showShopInterstitial);
     shop.setAttribute("aria-hidden", String(!showShopInterstitial));
+    shopCloseButton.hidden = !showShopInterstitial;
     if (state.hasWon) {
       shopTitle.textContent = "Victory Shop";
       shopHint.textContent = "Try your unlocked effects, then tap Play Again.";
@@ -1251,6 +1273,11 @@ export function renderGameShell(container) {
   muteButton.addEventListener("click", () => {
     toggleMasterMuted();
     updateMuteLabel();
+  });
+
+  shopCloseButton.addEventListener("click", () => {
+    shopInterstitialDismissed = true;
+    render();
   });
 
   playAgainButton.addEventListener("click", () => {

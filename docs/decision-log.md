@@ -253,3 +253,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Showing/hiding the shop by changing page layout changed lane size and disrupted rhythm feel.
 - Decision: Keep interstitial timing but render the shop as an absolute overlay above the play area.
 - Consequences: Lane geometry stays stable across gameplay/intermissions while preserving between-level shopping flow.
+
+## D-037 - Dismissible Shop Overlay + Control Clearance
+- Date: 2026-03-03
+- Status: Accepted
+- Context: Overlay placement can obscure lane controls, and players sometimes want to dismiss interstitial UI quickly.
+- Decision: Place shop overlay lower/right to avoid HUD controls and add an explicit close (`X`) button that dismisses the current interstitial.
+- Consequences: Better control access and reduced visual blocking while keeping between-level shop flow available.

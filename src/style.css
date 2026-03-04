@@ -959,10 +959,10 @@ body {
 
 .shop-overlay {
   position: absolute;
-  top: 5.8rem;
+  top: 8.6rem;
   right: 0.2rem;
   width: min(360px, 42vw);
-  max-height: min(66vh, 560px);
+  max-height: min(58vh, 500px);
   overflow-y: auto;
   z-index: 36;
   opacity: 0;
@@ -980,6 +980,26 @@ body {
 .shop-title {
   margin: 0;
   font-size: 1.1rem;
+}
+
+.shop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.shop-close {
+  min-width: 34px;
+  min-height: 34px;
+  border: 1px solid #d3c4a8;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fffdf7, #f3e5ca);
+  color: #5a4d39;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .shop-hint {
@@ -1380,11 +1400,11 @@ body {
 
 @media (max-width: 1079px) {
   .shop-overlay {
-    top: auto;
+    top: 7.2rem;
     left: 0.2rem;
     right: 0.2rem;
-    bottom: 0.2rem;
+    bottom: 4.2rem;
     width: auto;
-    max-height: 46vh;
+    max-height: none;
   }
 }
