@@ -33,6 +33,14 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      - name: Stamp asset URLs for cache busting
+        run: |
+          VERSION="${GITHUB_SHA}"
+          sed -E \
+            -e "s|(href=\"\./src/style\.css)(\")|\1?v=${VERSION}\2|" \
+            -e "s|(src=\"\./src/main\.js)(\")|\1?v=${VERSION}\2|" \
+            index.html > index.html.tmp
+          mv index.html.tmp index.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
