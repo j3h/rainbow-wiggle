@@ -132,6 +132,7 @@ export function renderGameShell(container) {
   let hypeText = "Ready to wiggle";
   let lastShopMessage = "";
   let maxScoreSeen = state.score;
+  let lastRenderedShopPointsScore = null;
   let countdownRaf = null;
   let isPaused = false;
   let pauseHasActiveRound = false;
@@ -264,6 +265,11 @@ export function renderGameShell(container) {
   shopTitle.textContent = "Rainbow Shop";
   const shopHeader = document.createElement("div");
   shopHeader.className = "shop-header";
+  const shopHeaderMeta = document.createElement("div");
+  shopHeaderMeta.className = "shop-header-meta";
+  const shopPoints = document.createElement("p");
+  shopPoints.className = "shop-points";
+  shopPoints.setAttribute("aria-live", "polite");
   const shopDoneButton = document.createElement("button");
   shopDoneButton.className = "shop-done";
   shopDoneButton.type = "button";
@@ -321,7 +327,8 @@ export function renderGameShell(container) {
     return button;
   });
   shopList.append(...shopButtons);
-  shopHeader.append(shopTitle, shopDoneButton);
+  shopHeaderMeta.append(shopPoints, shopDoneButton);
+  shopHeader.append(shopTitle, shopHeaderMeta);
   shop.append(shopHeader, shopHint, shopList);
   shopInterstitial.append(shop);
 
@@ -982,6 +989,11 @@ export function renderGameShell(container) {
     maxScoreSeen = Math.max(maxScoreSeen, state.score);
     stats.textContent = String(state.score);
     stats.setAttribute("aria-label", `Score ${state.score}`);
+    if (lastRenderedShopPointsScore !== state.score) {
+      shopPoints.textContent = `${state.score} pts`;
+      shopPoints.setAttribute("aria-label", `Points ${state.score}`);
+      lastRenderedShopPointsScore = state.score;
+    }
     modeButton.textContent = getDifficultyLabel(selectedDifficultyMode, state.rainbowStageIndex);
     laneCallout.textContent = laneCalloutText;
     laneCallout.classList.toggle(

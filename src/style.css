@@ -993,6 +993,29 @@ body {
   gap: 0.6rem;
 }
 
+.shop-header-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.48rem;
+}
+
+.shop-points {
+  margin: 0;
+  min-height: 34px;
+  min-width: 78px;
+  padding: 0 0.58rem;
+  border-radius: 999px;
+  border: 1px solid #d6ba86;
+  background: linear-gradient(180deg, #fff8df, #ffefc7);
+  color: #634429;
+  font-size: 0.86rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
 .shop-done {
   min-height: 40px;
   min-width: 98px;

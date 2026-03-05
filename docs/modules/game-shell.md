@@ -17,6 +17,7 @@ Render the single-screen game UI and wire input, rhythm timing, and shop interac
 - Must present the shop as an interstitial between levels (and after win), hidden during active rhythm play.
 - Must render the shop interstitial as an overlay so lane layout and timing geometry remain stable.
 - Must present the interstitial as a modal-style overlay with a `Done` button before gameplay can continue.
+- Must show current points inside the shop modal in addition to the lane HUD score.
 - Must render and evaluate lane hazard notes (red notes should be skipped).
 - Must run a boss phase near end-of-level and grant boss-clear reward unlocks.
 - Must pause briefly with celebration messaging when advancing to the next rainbow level.

@@ -267,3 +267,10 @@ Use this file as append-only. Never rewrite old decisions; supersede them with n
 - Context: Partial overlay still conflicted with controls and felt visually heavy/text-dense.
 - Decision: Use a full modal interstitial overlay that blocks play controls and requires a `Done` action to continue; redesign shop rows into icon + compact chip cards.
 - Consequences: No control overlap, clearer pacing break, and a lighter/funner shop presentation.
+
+## D-039 - Show Points Inside Shop Modal
+- Date: 2026-03-03
+- Status: Accepted
+- Context: HUD score remains visible behind modal, but purchasing decisions are easier when points are explicit in the shop itself.
+- Decision: Add a points pill in the shop modal header that mirrors current score in real time.
+- Consequences: Better purchase clarity without requiring eye travel to background HUD.
