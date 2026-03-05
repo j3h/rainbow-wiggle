@@ -957,7 +957,8 @@ export function renderGameShell(container) {
       shopTitle.textContent = "Victory Shop";
       shopHint.textContent = "Try your unlocked effects, then tap Play Again.";
     } else if (pendingLevelStageName) {
-      shopTitle.textContent = `Intermission Shop`;
+      const clearedStageName = RAINBOW_LEVELS[Math.max(0, state.rainbowStageIndex - 1)];
+      shopTitle.textContent = `Nice work clearing ${clearedStageName}!`;
       shopHint.textContent = `Before ${pendingLevelStageName}: spend points on upgrades.`;
     } else {
       shopTitle.textContent = "Rainbow Shop";
